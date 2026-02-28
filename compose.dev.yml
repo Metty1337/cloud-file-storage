@@ -1,21 +1,4 @@
 services:
-  backend:
-    build: .
-    ports:
-      - "127.0.0.1:8080:8080"
-    environment:
-      SPRING_PROFILES_ACTIVE: dev
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/cloud-storage-db
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_CONFIG_IMPORT: "optional:configtree:/run/secrets/"
-    secrets:
-      - source: spring_datasource_password
-        target: spring.datasource.password
-    depends_on:
-      postgres:
-        condition: service_healthy
-    restart: unless-stopped
-
   postgres:
     image: 'postgres:18.2'
     environment:
@@ -39,8 +22,6 @@ services:
 secrets:
   db_password:
     file: ./secrets/db_password.txt
-  spring_datasource_password:
-    file: ./secrets/spring.datasource.password
 
 volumes:
   postgres_data:

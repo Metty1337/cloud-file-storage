@@ -8,6 +8,14 @@ spring:
   config:
     activate:
       on-profile: dev
+    import: "optional:configtree:./secrets/"
+  docker:
+    compose:
+      enabled: false
+  datasource:
+    url: jdbc:postgresql://localhost:5432/cloud-storage-db
+    username: postgres
+    password: ${spring.datasource.password}
   jpa:
     show-sql: true
     hibernate:
@@ -16,3 +24,8 @@ spring:
     enabled: true
     locations: classpath:db/migration
     validate-on-migrate: true
+  security:
+    user:
+      name: dev
+      password: dev123
+      roles: ADMIN
