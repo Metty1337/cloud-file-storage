@@ -3,13 +3,13 @@ package metty1337.cloudfilestorage.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
-@Setter
 @Entity
 @Table(name = "users")
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
 
     @Id
@@ -25,5 +25,6 @@ public class User {
     @Size(max = 70)
     @NotNull
     @Column(nullable = false, length = 70)
+    @With
     private String password;
 }
