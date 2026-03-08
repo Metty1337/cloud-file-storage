@@ -25,7 +25,7 @@ public class UserService {
         User userWithHashedPassword = userMapper.toEntity(signUpRequest)
                 .withPassword(passwordEncoder.encode(signUpRequest.password()));
         userRepository.save(userWithHashedPassword);
-        return userMapper.toDto(userWithHashedPassword);
+        return userMapper.toSignUpResponse(userWithHashedPassword);
     }
 
     @Transactional(readOnly = true)

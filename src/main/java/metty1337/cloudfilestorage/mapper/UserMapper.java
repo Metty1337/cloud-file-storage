@@ -1,6 +1,7 @@
 package metty1337.cloudfilestorage.mapper;
 
 import metty1337.cloudfilestorage.dto.request.SignUpRequest;
+import metty1337.cloudfilestorage.dto.response.SignInResponse;
 import metty1337.cloudfilestorage.dto.response.SignUpResponse;
 import metty1337.cloudfilestorage.entity.User;
 import org.mapstruct.Mapper;
@@ -14,5 +15,7 @@ public interface UserMapper {
     @Mapping(target = "withPassword", ignore = true)
     User toEntity(SignUpRequest signUpRequest);
 
-    SignUpResponse toDto(User user);
+    SignUpResponse toSignUpResponse(User user);
+
+    SignInResponse toSignInResponse(org.springframework.security.core.userdetails.User userDetails);
 }
