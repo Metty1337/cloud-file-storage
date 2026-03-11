@@ -8,7 +8,7 @@ import lombok.Getter;
 public enum ExceptionMessages {
     USER_NOT_FOUND_EXCEPTION("User not found: %s"),
     BAD_CREDENTIALS_EXCEPTION("Bad credentials"),
-    USER_DATA_INTEGRITY_VIOLATION_EXCEPTION("Username is already in use"),
+    USER_ALREADY_EXIST_EXCEPTION("Username is already in use"),
     METHOD_ARGUMENT_NOT_VALID_EXCEPTION("Required parameters are missing"),
     INTERNAL_SERVER_ERROR("Internal server error");
 

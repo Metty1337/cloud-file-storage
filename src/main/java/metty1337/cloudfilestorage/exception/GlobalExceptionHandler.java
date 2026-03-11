@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import metty1337.cloudfilestorage.constants.ExceptionMessages;
 import metty1337.cloudfilestorage.dto.response.ErrorResponse;
 import org.jspecify.annotations.NonNull;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -26,11 +25,11 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(new ErrorResponse(errorMessage), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
-        log.warn(ExceptionMessages.USER_DATA_INTEGRITY_VIOLATION_EXCEPTION.getMessage());
+    @ExceptionHandler(UserAlreadyExistException.class)
+    public ResponseEntity<ErrorResponse> handleUserAlreadyExistException(UserAlreadyExistException e) {
+        log.warn(ExceptionMessages.USER_ALREADY_EXIST_EXCEPTION.getMessage());
 
-        ErrorResponse errorResponse = new ErrorResponse(ExceptionMessages.USER_DATA_INTEGRITY_VIOLATION_EXCEPTION.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse(ExceptionMessages.USER_ALREADY_EXIST_EXCEPTION.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
@@ -49,9 +48,7 @@ public class GlobalExceptionHandler {
     }
 
     private static @NonNull String getErrorMessage(MethodArgumentNotValidException ex) {
-        return ex.getBindingResult()
-                .getFieldErrors()
-                .stream()
+        return ex.getBindingResult().getFieldErrors().stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .collect(Collectors.joining(", "));
     }
