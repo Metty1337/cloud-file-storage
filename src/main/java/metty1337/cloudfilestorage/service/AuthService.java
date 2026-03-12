@@ -37,6 +37,7 @@ public class AuthService {
         return response;
     }
 
+    @Transactional(readOnly = true)
     public SignInResponse login(SignInRequest signInRequest, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
         Authentication authentication = getAuthentication(signInRequest.username(), signInRequest.password());
         saveAuthentication(httpServletRequest, httpServletResponse, authentication);
