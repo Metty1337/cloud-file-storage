@@ -26,8 +26,6 @@ class AuthControllerValidationTests {
     @Autowired
     ObjectMapper objectMapper;
 
-    // --- sign-up ---
-
     @Test
     void shouldReturn400_blankUsernameOnSignUp() throws Exception {
         mockMvc.perform(post("/api/auth/sign-up")
@@ -67,8 +65,6 @@ class AuthControllerValidationTests {
                         .content(objectMapper.writeValueAsString(new SignUpRequest("validuser", "ab"))))
                 .andExpect(status().isBadRequest());
     }
-
-    // --- sign-in ---
 
     @Test
     void shouldReturn400_blankUsernameOnSignIn() throws Exception {
