@@ -30,3 +30,7 @@ spring:
       name: dev
       password: dev123
       roles: ADMIN
+server:
+  servlet:
+    session:
+      timeout: 60s
