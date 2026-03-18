@@ -48,6 +48,8 @@ dependencies {
     annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
     annotationProcessor("org.projectlombok:lombok-mapstruct-binding:0.2.0")
     add("mockitoAgent", "org.mockito:mockito-core") { isTransitive = false }
+    implementation("io.minio:minio:8.6.0")
+    implementation("org.springframework.boot:spring-boot-configuration-processor")
 }
 tasks.withType<Test> {
     useJUnitPlatform()
