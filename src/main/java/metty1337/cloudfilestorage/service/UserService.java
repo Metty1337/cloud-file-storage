@@ -1,7 +1,6 @@
 package metty1337.cloudfilestorage.service;
 
 import lombok.RequiredArgsConstructor;
-import metty1337.cloudfilestorage.constants.ExceptionMessages;
 import metty1337.cloudfilestorage.dto.request.SignUpRequest;
 import metty1337.cloudfilestorage.dto.response.SignUpResponse;
 import metty1337.cloudfilestorage.entity.User;
@@ -30,7 +29,7 @@ public class UserService {
         try {
             userRepository.save(userWithHashedPassword);
         } catch (DataIntegrityViolationException e) {
-            throw new UserAlreadyExistException(ExceptionMessages.USER_NOT_FOUND_EXCEPTION.getMessage());
+            throw new UserAlreadyExistException(e);
         }
 
         return userMapper.toSignUpResponse(userWithHashedPassword);

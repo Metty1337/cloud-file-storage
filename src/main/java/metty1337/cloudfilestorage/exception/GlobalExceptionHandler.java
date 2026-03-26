@@ -1,7 +1,6 @@
 package metty1337.cloudfilestorage.exception;
 
 import lombok.extern.slf4j.Slf4j;
-import metty1337.cloudfilestorage.constants.ExceptionMessages;
 import metty1337.cloudfilestorage.dto.response.ErrorResponse;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpStatus;
@@ -19,7 +18,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
-        log.warn(ExceptionMessages.METHOD_ARGUMENT_NOT_VALID_EXCEPTION.getMessage());
+        log.warn("Required parameters are missing");
 
         String errorMessage = getErrorMessage(ex);
         return new ResponseEntity<>(new ErrorResponse(errorMessage), HttpStatus.BAD_REQUEST);
@@ -27,23 +26,23 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserAlreadyExistException.class)
     public ResponseEntity<ErrorResponse> handleUserAlreadyExistException(UserAlreadyExistException e) {
-        log.warn(ExceptionMessages.USER_ALREADY_EXIST_EXCEPTION.getMessage());
+        log.warn(e.getMessage());
 
-        ErrorResponse errorResponse = new ErrorResponse(ExceptionMessages.USER_ALREADY_EXIST_EXCEPTION.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException e) {
-        log.warn(ExceptionMessages.BAD_CREDENTIALS_EXCEPTION.getMessage());
+        log.warn(e.getMessage());
 
-        ErrorResponse errorResponse = new ErrorResponse(ExceptionMessages.BAD_CREDENTIALS_EXCEPTION.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception e) {
-        ErrorResponse errorResponse = new ErrorResponse(ExceptionMessages.INTERNAL_SERVER_ERROR.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse("Internal server error");
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

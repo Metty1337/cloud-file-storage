@@ -1,7 +1,6 @@
 package metty1337.cloudfilestorage.security;
 
 import lombok.RequiredArgsConstructor;
-import metty1337.cloudfilestorage.constants.ExceptionMessages;
 import metty1337.cloudfilestorage.entity.User;
 import metty1337.cloudfilestorage.service.UserService;
 import org.jspecify.annotations.NullMarked;
@@ -27,7 +26,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userService.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException(String.format(ExceptionMessages.USER_NOT_FOUND_EXCEPTION.getMessage(), username)));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
         boolean enabled = true;
         boolean accountNonExpired = true;
