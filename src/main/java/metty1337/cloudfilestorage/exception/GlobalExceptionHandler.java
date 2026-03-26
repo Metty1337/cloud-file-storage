@@ -10,6 +10,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -42,7 +43,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception e) {
-        ErrorResponse errorResponse = new ErrorResponse("Internal server error");
+        String errorId = UUID.randomUUID().toString();
+
+        log.error(errorId, e);
+
+        ErrorResponse errorResponse = new ErrorResponse("Internal server error: " + errorId);
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
