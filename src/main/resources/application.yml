@@ -28,7 +28,7 @@ spring:
 server:
   servlet:
     session:
-      timeout: 60s
+      timeout: 100000000s
 minio:
   url: http://localhost:9000
   access:
