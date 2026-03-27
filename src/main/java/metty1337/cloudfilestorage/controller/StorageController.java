@@ -2,9 +2,11 @@ package metty1337.cloudfilestorage.controller;
 
 import lombok.RequiredArgsConstructor;
 import metty1337.cloudfilestorage.dto.response.UploadResponse;
+import metty1337.cloudfilestorage.security.UserPrincipal;
 import metty1337.cloudfilestorage.service.StorageService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,8 +21,8 @@ public class StorageController {
     private final StorageService storageService;
 
     @PostMapping
-    public ResponseEntity<UploadResponse> uploadFile(@RequestParam MultipartFile file, @RequestParam String path) {
-        UploadResponse response = storageService.uploadFile(file, path);
+    public ResponseEntity<UploadResponse> uploadFile(@RequestParam MultipartFile file, @RequestParam String path, @AuthenticationPrincipal UserPrincipal user) {
+        UploadResponse response = storageService.uploadFile(file, path, user.getId());
         return new ResponseEntity<>(response, HttpStatus.CREATED);
-}
+    }
 }

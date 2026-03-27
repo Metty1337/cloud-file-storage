@@ -13,26 +13,28 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class StorageService {
 
+    private static final int AUTO_DETECT_PART_SIZE_VALUE = -1;
     private final MinioClient minioClient;
     private final MinioProperties minioProperties;
 
-    public UploadResponse uploadFile(MultipartFile multipartFile, String path) {
-        String fileName = multipartFile.getOriginalFilename();
+    public UploadResponse uploadFile(MultipartFile multipartFile, String path, long userId) {
+        String userDirectory = "user-%s-files/".formatted(userId);
+        String fileDirectory = userDirectory + path;
 
         try {
             long fileSize = multipartFile.getSize();
             minioClient.putObject(
                     PutObjectArgs.builder()
                             .bucket(minioProperties.bucket().name())
-                            .object(path + fileName)
-                            .stream(multipartFile.getInputStream(), fileSize, -1)
+                            .object(fileDirectory)
+                            .stream(multipartFile.getInputStream(), fileSize, AUTO_DETECT_PART_SIZE_VALUE)
                             .contentType(multipartFile.getContentType())
                             .build()
             );
 
             return new UploadResponse(
                     path,
-                    fileName,
+                    multipartFile.getOriginalFilename(),
                     fileSize,
                     "FILE"
             );
