@@ -9,6 +9,7 @@ import metty1337.cloudfilestorage.dto.request.SignUpRequest;
 import metty1337.cloudfilestorage.dto.response.SignInResponse;
 import metty1337.cloudfilestorage.dto.response.SignUpResponse;
 import metty1337.cloudfilestorage.mapper.UserMapper;
+import metty1337.cloudfilestorage.security.UserPrincipal;
 import metty1337.cloudfilestorage.service.UserService;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpStatus;
@@ -52,7 +53,7 @@ public class AuthController {
         Authentication authentication = getAuthentication(signInRequest.username(), signInRequest.password());
         saveAuthentication(httpServletRequest, httpServletResponse, authentication);
 
-        var userDetails = (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
+        var userDetails = (UserPrincipal) authentication.getPrincipal();
         return new ResponseEntity<>(userMapper.toSignInResponse(userDetails), HttpStatus.OK);
     }
 
