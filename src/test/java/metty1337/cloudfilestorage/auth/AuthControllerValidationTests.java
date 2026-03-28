@@ -1,30 +1,49 @@
 package metty1337.cloudfilestorage.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import metty1337.cloudfilestorage.TestcontainersConfiguration;
+import metty1337.cloudfilestorage.controller.AuthController;
 import metty1337.cloudfilestorage.dto.request.SignInRequest;
 import metty1337.cloudfilestorage.dto.request.SignUpRequest;
+import metty1337.cloudfilestorage.mapper.UserMapper;
+import metty1337.cloudfilestorage.security.CustomUserDetailsService;
+import metty1337.cloudfilestorage.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import metty1337.cloudfilestorage.config.SecurityConfig;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@Import(TestcontainersConfiguration.class)
-@SpringBootTest
-@AutoConfigureMockMvc
+@WebMvcTest(AuthController.class)
+@Import(SecurityConfig.class)
 class AuthControllerValidationTests {
+
+    @MockitoBean
+    UserService userService;
+
+    @MockitoBean
+    CustomUserDetailsService customUserDetailsService;
+
+    @MockitoBean
+    UserMapper userMapper;
+
+    @MockitoBean
+    AuthenticationManager authenticationManager;
+
+    @MockitoBean
+    HttpSessionSecurityContextRepository httpSessionSecurityContextRepository;
 
     @Autowired
     MockMvc mockMvc;
 
-    @Autowired
-    ObjectMapper objectMapper;
+    ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     void shouldReturn400_blankUsernameOnSignUp() throws Exception {
