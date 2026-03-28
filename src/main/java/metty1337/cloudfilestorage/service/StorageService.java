@@ -32,7 +32,7 @@ public class StorageService {
         }
 
         try {
-            String resourceName = getResourceName(path, userId);
+            String resourceName = getResourceName(path, userId) + multipartFile.getOriginalFilename();
             long fileSize = multipartFile.getSize();
 
             minioClient.putObject(
@@ -43,6 +43,7 @@ public class StorageService {
                             .contentType(multipartFile.getContentType())
                             .build()
             );
+            ensureResourceExists(pathToFile, userId);
 
             return new StorageResponse(
                     path,
@@ -147,10 +148,6 @@ public class StorageService {
             throw new StorageAccessException(e);
         }
     }
-
-//    private static @NonNull String getUploadResourceName(MultipartFile multipartFile, String path, long userId) {
-//        return getResourceName(path, userId) + multipartFile.getOriginalFilename();
-//    }
 
     private static @NonNull String getResourceName(String path, long userId) {
         return getUserDirectory(userId) + path;

@@ -2,6 +2,7 @@ package metty1337.cloudfilestorage.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import metty1337.cloudfilestorage.dto.request.StorageMoveRequest;
 import metty1337.cloudfilestorage.dto.request.StoragePathRequest;
 import metty1337.cloudfilestorage.dto.request.StorageUploadRequest;
 import metty1337.cloudfilestorage.dto.response.StorageResponse;
