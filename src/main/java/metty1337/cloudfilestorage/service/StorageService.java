@@ -1,20 +1,19 @@
 package metty1337.cloudfilestorage.service;
 
-import io.minio.MinioClient;
-import io.minio.PutObjectArgs;
-import io.minio.StatObjectArgs;
-import io.minio.StatObjectResponse;
+import io.minio.*;
 import io.minio.errors.ErrorResponseException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import metty1337.cloudfilestorage.config.minio.MinioProperties;
 import metty1337.cloudfilestorage.dto.response.StorageResponse;
-import metty1337.cloudfilestorage.exception.ResourceNotFound;
-import metty1337.cloudfilestorage.exception.StorageAccessException;
-import metty1337.cloudfilestorage.exception.StorageUploadException;
+import metty1337.cloudfilestorage.exception.*;
 import org.jspecify.annotations.NonNull;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.InputStream;
 
 @Slf4j
 @Service
@@ -73,11 +72,62 @@ public class StorageService {
                     CONTENT_TYPE_FILE
             );
         } catch (ErrorResponseException e) {
-            throw new ResourceNotFound(e);
+            throw new ResourceNotFoundException(e);
         } catch (Exception e) {
             throw new StorageAccessException(e);
         }
+    }
 
+    public void deleteResource(String path, long userId) {
+        ensureResourceExists(path, userId);
+
+        String resourceName = getResourceName(path, userId);
+
+        try {
+            minioClient.removeObject(
+                    RemoveObjectArgs.builder()
+                            .bucket(minioProperties.bucket().name())
+                            .object(resourceName)
+                            .build()
+            );
+        } catch (Exception e) {
+            throw new StorageDeleteException(e);
+        }
+    }
+
+    public Resource downloadFile(String path, long userId) {
+        ensureResourceExists(path, userId);
+
+        String resourceName = getResourceName(path, userId);
+
+        try {
+            InputStream stream = minioClient.getObject(
+                    GetObjectArgs.builder()
+                            .bucket(minioProperties.bucket().name())
+                            .object(resourceName)
+                            .build()
+            );
+            return new InputStreamResource(stream);
+        } catch (Exception e) {
+            throw new StorageDownloadException(e);
+        }
+    }
+
+    private void ensureResourceExists(String path, long userId) {
+        String resourceName = getResourceName(path, userId);
+
+        try {
+            minioClient.statObject(
+                    StatObjectArgs.builder()
+                            .bucket(minioProperties.bucket().name())
+                            .object(resourceName)
+                            .build()
+            );
+        } catch (ErrorResponseException e) {
+            throw new ResourceNotFoundException(e);
+        } catch (Exception e) {
+            throw new StorageAccessException(e);
+        }
     }
 
     private static @NonNull String getResourceName(String path, long userId) {
