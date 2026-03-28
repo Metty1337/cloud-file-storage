@@ -3,11 +3,11 @@ package metty1337.cloudfilestorage.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import metty1337.cloudfilestorage.dto.request.StoragePathRequest;
+import metty1337.cloudfilestorage.dto.request.StorageUploadRequest;
 import metty1337.cloudfilestorage.dto.response.StorageResponse;
 import metty1337.cloudfilestorage.exception.EmptyFileException;
 import metty1337.cloudfilestorage.security.UserPrincipal;
 import metty1337.cloudfilestorage.service.StorageService;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -26,7 +26,7 @@ public class StorageController {
     private final StorageService storageService;
 
     @PostMapping
-    public ResponseEntity<StorageResponse> uploadFile(@RequestParam MultipartFile file, @Valid StoragePathRequest request, @AuthenticationPrincipal UserPrincipal user) {
+    public ResponseEntity<StorageResponse> uploadFile(@RequestParam MultipartFile file, @Valid StorageUploadRequest request, @AuthenticationPrincipal UserPrincipal user) {
         if (file.isEmpty()) {
             throw new EmptyFileException();
         }
@@ -54,4 +54,9 @@ public class StorageController {
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(resource);
     }
+
+//    @GetMapping("/move")
+//    public ResponseEntity<StorageResponse> moveResource(@Valid StorageMoveRequest request, @AuthenticationPrincipal UserPrincipal user) {
+//
+//    }
 }

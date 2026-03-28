@@ -26,10 +26,15 @@ public class StorageService {
     private final MinioProperties minioProperties;
 
     public StorageResponse uploadFile(MultipartFile multipartFile, String path, long userId) {
-        String resourceName = getResourceName(path, userId);
+        String pathToFile = path + multipartFile.getOriginalFilename();
+        if (resourceExists(pathToFile, userId)) {
+            throw new ResourceAlreadyExist();
+        }
 
         try {
+            String resourceName = getResourceName(path, userId);
             long fileSize = multipartFile.getSize();
+
             minioClient.putObject(
                     PutObjectArgs.builder()
                             .bucket(minioProperties.bucket().name())
@@ -113,9 +118,21 @@ public class StorageService {
         }
     }
 
-    private void ensureResourceExists(String path, long userId) {
-        String resourceName = getResourceName(path, userId);
 
+//    public StorageResponse moveFile(String from, String to, long userId) {
+//        ensureResourceExists(from, userId);
+//
+//
+//    }
+
+    private void ensureResourceExists(String path, long userId) {
+        if (!resourceExists(path, userId)) {
+            throw new ResourceNotFoundException();
+        }
+    }
+
+    private boolean resourceExists(String path, long userId) {
+        String resourceName = getResourceName(path, userId);
         try {
             minioClient.statObject(
                     StatObjectArgs.builder()
@@ -123,12 +140,17 @@ public class StorageService {
                             .object(resourceName)
                             .build()
             );
+            return true;
         } catch (ErrorResponseException e) {
-            throw new ResourceNotFoundException(e);
+            return false;
         } catch (Exception e) {
             throw new StorageAccessException(e);
         }
     }
+
+//    private static @NonNull String getUploadResourceName(MultipartFile multipartFile, String path, long userId) {
+//        return getResourceName(path, userId) + multipartFile.getOriginalFilename();
+//    }
 
     private static @NonNull String getResourceName(String path, long userId) {
         return getUserDirectory(userId) + path;

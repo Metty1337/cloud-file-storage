@@ -85,6 +85,15 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(ResourceAlreadyExist.class)
+    public ResponseEntity<ErrorResponse> handleResourceAlreadyExist(ResourceAlreadyExist e) {
+        log.warn(e.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+    }
+
+
     private static @NonNull String getErrorMessage(MethodArgumentNotValidException ex) {
         return ex.getBindingResult().getFieldErrors().stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
