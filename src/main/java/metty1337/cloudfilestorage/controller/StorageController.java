@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import metty1337.cloudfilestorage.dto.request.StorageMoveRequest;
 import metty1337.cloudfilestorage.dto.request.StoragePathRequest;
 import metty1337.cloudfilestorage.dto.request.StorageUploadRequest;
-import metty1337.cloudfilestorage.dto.response.StorageResponse;
+import metty1337.cloudfilestorage.dto.response.storage.StorageObjectResponse;
 import metty1337.cloudfilestorage.exception.EmptyFileException;
 import metty1337.cloudfilestorage.security.UserPrincipal;
 import metty1337.cloudfilestorage.service.StorageService;
@@ -27,18 +27,18 @@ public class StorageController {
     private final StorageService storageService;
 
     @PostMapping
-    public ResponseEntity<StorageResponse> uploadFile(@RequestParam MultipartFile file, @Valid StorageUploadRequest request, @AuthenticationPrincipal UserPrincipal user) {
+    public ResponseEntity<StorageObjectResponse> uploadFile(@RequestParam MultipartFile file, @Valid StorageUploadRequest request, @AuthenticationPrincipal UserPrincipal user) {
         if (file.isEmpty()) {
             throw new EmptyFileException();
         }
 
-        StorageResponse response = storageService.uploadFile(file, request.path(), user.getId());
+        StorageObjectResponse response = storageService.uploadFile(file, request.path(), user.getId());
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping
-    public ResponseEntity<StorageResponse> getResourceData(@Valid StoragePathRequest request, @AuthenticationPrincipal UserPrincipal user) {
-        StorageResponse response = storageService.getResourceData(request.path(), user.getId());
+    public ResponseEntity<StorageObjectResponse> getResourceData(@Valid StoragePathRequest request, @AuthenticationPrincipal UserPrincipal user) {
+        StorageObjectResponse response = storageService.getResourceData(request.path(), user.getId());
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -56,8 +56,9 @@ public class StorageController {
                 .body(resource);
     }
 
-//    @GetMapping("/move")
-//    public ResponseEntity<StorageResponse> moveResource(@Valid StorageMoveRequest request, @AuthenticationPrincipal UserPrincipal user) {
-//
-//    }
+    @GetMapping("/move")
+    public ResponseEntity<StorageObjectResponse> moveResource(@Valid StorageMoveRequest request, @AuthenticationPrincipal UserPrincipal user) {
+        StorageObjectResponse response = storageService.moveResource(request.from(), request.to(), user.getId());
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 }
