@@ -4,7 +4,7 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import metty1337.cloudfilestorage.dto.request.StorageMoveRequest;
 
-public class ValidConsistentResourceTypeValidator implements ConstraintValidator<ValidConsistentResourceType, StorageMoveRequest> {
+public class ValidConsistentObjectTypeValidator implements ConstraintValidator<ValidConsistentObjectType, StorageMoveRequest> {
 
     @Override
     public boolean isValid(StorageMoveRequest request, ConstraintValidatorContext context) {

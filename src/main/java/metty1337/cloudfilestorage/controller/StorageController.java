@@ -27,29 +27,29 @@ public class StorageController {
     private final StorageService storageService;
 
     @PostMapping
-    public ResponseEntity<StorageObjectResponse> uploadFile(@RequestParam MultipartFile file, @Valid StorageUploadRequest request, @AuthenticationPrincipal UserPrincipal user) {
+    public ResponseEntity<StorageObjectResponse> uploadObject(@RequestParam MultipartFile file, @Valid StorageUploadRequest request, @AuthenticationPrincipal UserPrincipal user) {
         if (file.isEmpty()) {
             throw new EmptyFileException();
         }
 
-        StorageObjectResponse response = storageService.uploadFile(file, request.path(), user.getId());
+        StorageObjectResponse response = storageService.uploadObject(file, request.path(), user.getId());
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping
-    public ResponseEntity<StorageObjectResponse> getResourceData(@Valid StoragePathRequest request, @AuthenticationPrincipal UserPrincipal user) {
-        StorageObjectResponse response = storageService.getResourceData(request.path(), user.getId());
+    public ResponseEntity<StorageObjectResponse> getObjectData(@Valid StoragePathRequest request, @AuthenticationPrincipal UserPrincipal user) {
+        StorageObjectResponse response = storageService.getObjectData(request.path(), user.getId());
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @DeleteMapping
-    public ResponseEntity<Void> deleteResource(@Valid StoragePathRequest request, @AuthenticationPrincipal UserPrincipal user) {
-        storageService.deleteResource(request.path(), user.getId());
+    public ResponseEntity<Void> deleteObject(@Valid StoragePathRequest request, @AuthenticationPrincipal UserPrincipal user) {
+        storageService.deleteObject(request.path(), user.getId());
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping("/download")
-    public ResponseEntity<Resource> downloadFile(@Valid StoragePathRequest request, @AuthenticationPrincipal UserPrincipal user) {
+    public ResponseEntity<Resource> downloadObject(@Valid StoragePathRequest request, @AuthenticationPrincipal UserPrincipal user) {
         Resource resource = storageService.downloadFile(request.path(), user.getId());
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
@@ -57,8 +57,13 @@ public class StorageController {
     }
 
     @GetMapping("/move")
-    public ResponseEntity<StorageObjectResponse> moveResource(@Valid StorageMoveRequest request, @AuthenticationPrincipal UserPrincipal user) {
-        StorageObjectResponse response = storageService.moveResource(request.from(), request.to(), user.getId());
+    public ResponseEntity<StorageObjectResponse> moveObject(@Valid StorageMoveRequest request, @AuthenticationPrincipal UserPrincipal user) {
+        StorageObjectResponse response = storageService.moveObject(request.from(), request.to(), user.getId());
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+//    @GetMapping("/search")
+//    public ResponseEntity<StorageSearchRequest> searchObject(@Valid StorageSearchRequest request, @AuthenticationPrincipal UserPrincipal user) {
+//
+//    }
 }

@@ -10,8 +10,8 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = ValidConsistentResourceTypeValidator.class)
-public @interface ValidConsistentResourceType {
+@Constraint(validatedBy = ValidConsistentObjectTypeValidator.class)
+public @interface ValidConsistentObjectType {
     String message() default "Both 'from' and 'to' must be either files or directories";
 
     Class<?>[] groups() default {};

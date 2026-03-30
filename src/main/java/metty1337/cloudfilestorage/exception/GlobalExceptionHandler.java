@@ -69,8 +69,8 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleResourceNotFound(ResourceNotFoundException e) {
+    @ExceptionHandler(ObjectNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleObjectNotFound(ObjectNotFoundException e) {
         log.warn(e.getMessage());
 
         ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
@@ -85,8 +85,8 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(ResourceAlreadyExist.class)
-    public ResponseEntity<ErrorResponse> handleResourceAlreadyExist(ResourceAlreadyExist e) {
+    @ExceptionHandler(ObjectAlreadyExistException.class)
+    public ResponseEntity<ErrorResponse> handleObjectAlreadyExist(ObjectAlreadyExistException e) {
         log.warn(e.getMessage());
 
         ErrorResponse errorResponse = new ErrorResponse(e.getMessage());

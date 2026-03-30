@@ -2,12 +2,12 @@ package metty1337.cloudfilestorage.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import metty1337.cloudfilestorage.constants.ResourceType;
+import metty1337.cloudfilestorage.constants.ObjectType;
 import metty1337.cloudfilestorage.dto.response.storage.StorageDirectoryResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageFileResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageObjectResponse;
-import metty1337.cloudfilestorage.exception.ResourceAlreadyExist;
-import metty1337.cloudfilestorage.exception.ResourceNotFoundException;
+import metty1337.cloudfilestorage.exception.ObjectAlreadyExistException;
+import metty1337.cloudfilestorage.exception.ObjectNotFoundException;
 import metty1337.cloudfilestorage.exception.StorageUploadException;
 import metty1337.cloudfilestorage.storage.ObjectData;
 import metty1337.cloudfilestorage.storage.StorageClient;
@@ -25,23 +25,23 @@ public class StorageService {
 
     private final StorageClient storageClient;
 
-    public StorageObjectResponse uploadFile(MultipartFile multipartFile, String path, long userId) {
-        String resourceName = StoragePathResolver.getResourceName(path, userId) + multipartFile.getOriginalFilename();
-        ensureFileNotExist(resourceName);
-        upload(multipartFile, resourceName);
+    public StorageObjectResponse uploadObject(MultipartFile multipartFile, String path, long userId) {
+        String objectName = StoragePathResolver.getObjectName(path, userId) + multipartFile.getOriginalFilename();
+        ensureFileNotExist(objectName);
+        upload(multipartFile, objectName);
 
         return new StorageFileResponse(
                 path,
                 multipartFile.getOriginalFilename(),
                 multipartFile.getSize(),
-                ResourceType.FILE.name()
+                ObjectType.FILE.name()
         );
     }
 
-    public StorageObjectResponse getResourceData(String path, long userId) {
-        String resourceName = StoragePathResolver.getResourceName(path, userId);
+    public StorageObjectResponse getObjectData(String path, long userId) {
+        String objectName = StoragePathResolver.getObjectName(path, userId);
 
-        ObjectData objectData = storageClient.getStatResponse(resourceName);
+        ObjectData objectData = storageClient.getObjectData(objectName);
 
         String filePath = StoragePathResolver.getViewFilePath(objectData.name(), userId);
         String name = StoragePathResolver.getFileName(objectData.name());
@@ -51,78 +51,91 @@ public class StorageService {
                 filePath,
                 name,
                 size,
-                ResourceType.FILE.name()
+                ObjectType.FILE.name()
         );
     }
 
-    public void deleteFile(String path, long userId) {
-        String resourceName = StoragePathResolver.getResourceName(path, userId);
-        ensureFileExists(resourceName);
-        storageClient.removeFile(resourceName);
+    public void deleteObject(String path, long userId) {
+        String objectName = StoragePathResolver.getObjectName(path, userId);
+        if (StoragePathResolver.isFile(objectName)) {
+            deleteFile(objectName);
+        } else {
+            deleteDirectory(objectName);
+        }
     }
 
     public Resource downloadFile(String path, long userId) {
-        String resourceName = StoragePathResolver.getResourceName(path, userId);
-        ensureFileExists(resourceName);
-        return storageClient.getResource(resourceName);
+        String objectName = StoragePathResolver.getObjectName(path, userId);
+        ensureFileExists(objectName);
+        return storageClient.getObject(objectName);
     }
 
-    public StorageObjectResponse moveResource(String from, String to, long userId) {
-        String oldResourceName = StoragePathResolver.getResourceName(from, userId);
+    public StorageObjectResponse moveObject(String from, String to, long userId) {
+        String oldObjectName = StoragePathResolver.getObjectName(from, userId);
 
-        if (StoragePathResolver.isFile(oldResourceName)) {
-            ensureFileExists(oldResourceName);
+        if (StoragePathResolver.isFile(oldObjectName)) {
+            ensureFileExists(oldObjectName);
 
-            String newResourceName = StoragePathResolver.getResourceName(to, userId);
-            ensureFileNotExist(newResourceName);
+            String newObjectName = StoragePathResolver.getObjectName(to, userId);
+            ensureFileNotExist(newObjectName);
 
-            storageClient.moveFile(oldResourceName, newResourceName);
+            storageClient.moveFile(oldObjectName, newObjectName);
 
-            String newFilePath = StoragePathResolver.getViewFilePath(newResourceName, userId);
-            String newFileName = StoragePathResolver.getFileName(newResourceName);
-            long size = storageClient.getFileSize(newResourceName);
+            String newFilePath = StoragePathResolver.getViewFilePath(newObjectName, userId);
+            String newFileName = StoragePathResolver.getFileName(newObjectName);
+            long size = storageClient.getFileSize(newObjectName);
 
             return new StorageFileResponse(
                     newFilePath,
                     newFileName,
                     size,
-                    ResourceType.FILE.name()
+                    ObjectType.FILE.name()
             );
         }
-        ensureDirectoryExist(oldResourceName);
-        String newResourceName = StoragePathResolver.getResourceName(to, userId);
-        storageClient.moveDirectory(oldResourceName, newResourceName);
+        ensureDirectoryExist(oldObjectName);
+        String newObjectName = StoragePathResolver.getObjectName(to, userId);
+        storageClient.moveDirectory(oldObjectName, newObjectName);
 
         return new StorageDirectoryResponse(
-                StoragePathResolver.getViewFilePath(newResourceName, userId),
-                StoragePathResolver.getDirectoryName(newResourceName),
-                ResourceType.DIRECTORY.name()
+                StoragePathResolver.getViewFilePath(newObjectName, userId),
+                StoragePathResolver.getDirectoryName(newObjectName),
+                ObjectType.DIRECTORY.name()
         );
     }
 
-    private void ensureDirectoryExist(String oldResourceName) {
-        if (!storageClient.isDirectoryExist(oldResourceName)) {
-            throw new ResourceNotFoundException();
+    private void deleteDirectory(String objectName) {
+        ensureDirectoryExist(objectName);
+        storageClient.removeDirectory(objectName);
+    }
+
+    private void deleteFile(String objectName) {
+        ensureFileExists(objectName);
+        storageClient.removeFile(objectName);
+    }
+
+    private void ensureDirectoryExist(String objectName) {
+        if (!storageClient.isDirectoryExist(objectName)) {
+            throw new ObjectNotFoundException();
         }
     }
 
-    private void upload(MultipartFile multipartFile, String resourceName) {
+    private void upload(MultipartFile multipartFile, String objectName) {
         try {
-            storageClient.upload(resourceName, multipartFile.getInputStream(), multipartFile.getSize(), multipartFile.getContentType());
+            storageClient.upload(objectName, multipartFile.getInputStream(), multipartFile.getSize(), multipartFile.getContentType());
         } catch (IOException e) {
             throw new StorageUploadException(e);
         }
     }
 
-    private void ensureFileExists(String resourceName) {
-        if (!storageClient.isFileExist(resourceName)) {
-            throw new ResourceNotFoundException();
+    private void ensureFileExists(String objectName) {
+        if (!storageClient.isFileExist(objectName)) {
+            throw new ObjectNotFoundException();
         }
     }
 
-    private void ensureFileNotExist(String resourceName) {
-        if (storageClient.isFileExist(resourceName)) {
-            throw new ResourceAlreadyExist();
+    private void ensureFileNotExist(String objectName) {
+        if (storageClient.isFileExist(objectName)) {
+            throw new ObjectAlreadyExistException();
         }
     }
 }

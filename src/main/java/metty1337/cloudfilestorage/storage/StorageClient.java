@@ -2,28 +2,29 @@ package metty1337.cloudfilestorage.storage;
 
 import org.jspecify.annotations.NonNull;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 
 public interface StorageClient {
-    @NonNull InputStreamResource getResource(String resourceName);
+    @NonNull InputStreamResource getObject(String objectName);
 
-    ObjectData getStatResponse(String resourceName);
+    ObjectData getObjectData(String objectName);
 
-    void upload(String resourceName, InputStream inputStream, long size, String contentType);
+    void upload(String objectName, InputStream inputStream, long size, String contentType);
 
-    void copyObject(String oldResourceName, String newResourceName);
+    void copyFile(String oldObjectName, String newObjectName);
 
-    void removeFile(String resourceName);
+    void removeFile(String objectName);
 
-    boolean isFileExist(String resourceName);
+    void removeDirectory(String directoryName);
+
+    boolean isFileExist(String objectName);
 
     boolean isDirectoryExist(String directoryName);
 
-    void moveFile(String oldResourceName, String newResourceName);
+    void moveFile(String oldObjectName, String newObjectName);
 
-    void moveDirectory(String oldResourceName, String newResourceName);
+    void moveDirectory(String oldObjectName, String newObjectName);
 
-    long getFileSize(String resourceName);
+    long getFileSize(String objectName);
 }

@@ -22,27 +22,27 @@ public class MinioStorageClient implements StorageClient {
     private final MinioProperties minioProperties;
 
     @Override
-    public @NonNull InputStreamResource getResource(String resourceName) {
+    public @NonNull InputStreamResource getObject(String objectName) {
         try {
             InputStream stream = minioClient.getObject(
                     GetObjectArgs.builder()
                             .bucket(minioProperties.bucket().name())
-                            .object(resourceName)
+                            .object(objectName)
                             .build()
             );
             return new InputStreamResource(stream);
         } catch (Exception e) {
-            throw new StorageDownloadException(e);
+            throw new StorageDownloadingException(e);
         }
     }
 
     @Override
-    public ObjectData getStatResponse(String resourceName) {
+    public ObjectData getObjectData(String objectName) {
         try {
             StatObjectResponse objectResponse = minioClient.statObject(
                     StatObjectArgs.builder()
                             .bucket(minioProperties.bucket().name())
-                            .object(resourceName)
+                            .object(objectName)
                             .build()
             );
 
@@ -51,19 +51,19 @@ public class MinioStorageClient implements StorageClient {
                     objectResponse.size()
             );
         } catch (ErrorResponseException e) {
-            throw new ResourceNotFoundException(e);
+            throw new ObjectNotFoundException(e);
         } catch (Exception e) {
             throw new StorageAccessException(e);
         }
     }
 
     @Override
-    public void upload(String resourceName, InputStream inputStream, long size, String contentType) {
+    public void upload(String objectName, InputStream inputStream, long size, String contentType) {
         try {
             minioClient.putObject(
                     PutObjectArgs.builder()
                             .bucket(minioProperties.bucket().name())
-                            .object(resourceName)
+                            .object(objectName)
                             .stream(inputStream, size, AUTO_DETECT_PART_SIZE_VALUE)
                             .contentType(contentType)
                             .build()
@@ -74,46 +74,58 @@ public class MinioStorageClient implements StorageClient {
     }
 
     @Override
-    public void copyObject(String oldResourceName, String newResourceName) {
+    public void copyFile(String oldObjectName, String newObjectName) {
         try {
             minioClient.copyObject(
                     CopyObjectArgs.builder()
                             .bucket(minioProperties.bucket().name())
-                            .object(newResourceName)
+                            .object(newObjectName)
                             .source(
                                     CopySource.builder()
                                             .bucket(minioProperties.bucket().name())
-                                            .object(oldResourceName)
+                                            .object(oldObjectName)
                                             .build()
                             )
                             .build()
             );
         } catch (Exception e) {
-            throw new StorageCopyException(e);
+            throw new StorageCopyingException(e);
         }
     }
 
     @Override
-    public void removeFile(String resourceName) {
+    public void removeFile(String objectName) {
         try {
             minioClient.removeObject(
                     RemoveObjectArgs.builder()
                             .bucket(minioProperties.bucket().name())
-                            .object(resourceName)
+                            .object(objectName)
                             .build()
             );
         } catch (Exception e) {
-            throw new StorageDeleteException(e);
+            throw new StorageObjectDeletionException(e);
         }
     }
 
     @Override
-    public boolean isFileExist(String resourceName) {
+    public void removeDirectory(String directoryName) {
+        Iterable<Result<Item>> directoryObjects = listObjectsByPrefix(directoryName);
+        for (Result<Item> directoryObject : directoryObjects) {
+            try {
+                removeFile(directoryObject.get().objectName());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    @Override
+    public boolean isFileExist(String objectName) {
         try {
             minioClient.statObject(
                     StatObjectArgs.builder()
                             .bucket(minioProperties.bucket().name())
-                            .object(resourceName)
+                            .object(objectName)
                             .build()
             );
             return true;
@@ -138,46 +150,51 @@ public class MinioStorageClient implements StorageClient {
     }
 
     @Override
-    public void moveFile(String oldResourceName, String newResourceName) {
+    public void moveFile(String oldObjectName, String newObjectName) {
         try {
-            copyObject(oldResourceName, newResourceName);
-            removeFile(oldResourceName);
+            copyFile(oldObjectName, newObjectName);
+            removeFile(oldObjectName);
         } catch (Exception e) {
-            throw new StorageMoveException(e);
+            throw new StorageMovementException(e);
         }
     }
 
     @Override
-    public void moveDirectory(String oldResourceName, String newResourceName) {
+    public void moveDirectory(String oldObjectName, String newObjectName) {
         try {
-            Iterable<Result<Item>> oldObjects = minioClient.listObjects(
-                    ListObjectsArgs.builder()
-                            .bucket(minioProperties.bucket().name())
-                            .prefix(oldResourceName)
-                            .recursive(true)
-                            .build()
-            );
+            Iterable<Result<Item>> oldObjects = listObjectsByPrefix(oldObjectName);
 
             for (Result<Item> oldObject : oldObjects) {
                 String oldName = oldObject.get().objectName();
-                String newName = replaceFileNamePrefix(oldName, oldResourceName, newResourceName);
+                String newName = replaceFileNamePrefix(oldName, oldObjectName, newObjectName);
 
-                copyObject(oldName, newName);
+                copyFile(oldName, newName);
                 removeFile(oldName);
             }
         } catch (Exception e) {
-            throw new StorageMoveException(e);
+            throw new StorageMovementException(e);
         }
     }
 
+
     @Override
-    public long getFileSize(String resourceName) {
-        ObjectData objectData = getStatResponse(resourceName);
+    public long getFileSize(String objectName) {
+        ObjectData objectData = getObjectData(objectName);
         return objectData.size();
     }
 
     private String replaceFileNamePrefix(String fileName, String oldPrefix, String newPrefix) {
         String withoutOldPrefix = fileName.substring(oldPrefix.length());
         return newPrefix + withoutOldPrefix;
+    }
+
+    private Iterable<Result<Item>> listObjectsByPrefix(String prefix) {
+        return minioClient.listObjects(
+                ListObjectsArgs.builder()
+                        .bucket(minioProperties.bucket().name())
+                        .prefix(prefix)
+                        .recursive(true)
+                        .build()
+        );
     }
 }
