@@ -10,7 +10,7 @@ public interface StorageClient {
 
     ObjectData getObjectData(String objectName);
 
-    void upload(String objectName, InputStream inputStream, long size, String contentType);
+    void uploadFile(String objectName, InputStream inputStream, long size, String contentType);
 
     void copyFile(String oldObjectName, String newObjectName);
 

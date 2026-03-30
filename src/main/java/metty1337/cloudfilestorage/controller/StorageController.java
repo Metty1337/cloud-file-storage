@@ -18,6 +18,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/resource")
 @RequiredArgsConstructor
@@ -27,12 +29,12 @@ public class StorageController {
     private final StorageService storageService;
 
     @PostMapping
-    public ResponseEntity<StorageObjectResponse> uploadObject(@RequestParam MultipartFile file, @Valid StorageUploadRequest request, @AuthenticationPrincipal UserPrincipal user) {
-        if (file.isEmpty()) {
+    public ResponseEntity<StorageObjectResponse> uploadObject(@RequestParam("object") List<MultipartFile> files, @Valid StorageUploadRequest request, @AuthenticationPrincipal UserPrincipal user) {
+        if (files.isEmpty()) {
             throw new EmptyFileException();
         }
 
-        StorageObjectResponse response = storageService.uploadObject(file, request.path(), user.getId());
+        StorageObjectResponse response = storageService.uploadObject(files, request.path(), user.getId());
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 

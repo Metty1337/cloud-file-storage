@@ -58,7 +58,7 @@ public class MinioStorageClient implements StorageClient {
     }
 
     @Override
-    public void upload(String objectName, InputStream inputStream, long size, String contentType) {
+    public void uploadFile(String objectName, InputStream inputStream, long size, String contentType) {
         try {
             minioClient.putObject(
                     PutObjectArgs.builder()

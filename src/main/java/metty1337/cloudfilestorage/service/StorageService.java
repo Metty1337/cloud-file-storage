@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -25,17 +27,33 @@ public class StorageService {
 
     private final StorageClient storageClient;
 
-    public StorageObjectResponse uploadObject(MultipartFile multipartFile, String path, long userId) {
-        String objectName = StoragePathResolver.getObjectName(path, userId) + multipartFile.getOriginalFilename();
-        ensureFileNotExist(objectName);
-        upload(multipartFile, objectName);
+    public StorageObjectResponse uploadObject(List<MultipartFile> files, String path, long userId) {
+        for (MultipartFile file : files) {
+            String objectName = StoragePathResolver.getObjectName(path, userId) + file.getOriginalFilename();
 
-        return new StorageFileResponse(
-                path,
-                multipartFile.getOriginalFilename(),
-                multipartFile.getSize(),
-                ObjectType.FILE.name()
-        );
+            ensureFileNotExist(objectName);
+            uploadFile(file, objectName);
+        }
+
+        MultipartFile object = files.getFirst();
+        if (isDirectoryFiles(files)) {
+            return new StorageDirectoryResponse(
+                    path,
+                    StoragePathResolver.getParentDirectory(Objects.requireNonNull(object.getOriginalFilename())),
+                    ObjectType.DIRECTORY.name()
+            );
+        } else {
+            return new StorageFileResponse(
+                    path,
+                    object.getOriginalFilename(),
+                    object.getSize(),
+                    ObjectType.FILE.name()
+            );
+        }
+    }
+
+    private static boolean isDirectoryFiles(List<MultipartFile> files) {
+        return files.size() > 1;
     }
 
     public StorageObjectResponse getObjectData(String path, long userId) {
@@ -119,9 +137,9 @@ public class StorageService {
         }
     }
 
-    private void upload(MultipartFile multipartFile, String objectName) {
+    private void uploadFile(MultipartFile multipartFile, String objectName) {
         try {
-            storageClient.upload(objectName, multipartFile.getInputStream(), multipartFile.getSize(), multipartFile.getContentType());
+            storageClient.uploadFile(objectName, multipartFile.getInputStream(), multipartFile.getSize(), multipartFile.getContentType());
         } catch (IOException e) {
             throw new StorageUploadException(e);
         }

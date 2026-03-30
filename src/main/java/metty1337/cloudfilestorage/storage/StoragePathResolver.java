@@ -10,10 +10,6 @@ public class StoragePathResolver {
         return getUserDirectory(userId) + path;
     }
 
-    public static @NonNull String getUserDirectory(long userId) {
-        return "user-%s-files/".formatted(userId);
-    }
-
     public static boolean isFile(String path) {
         return !path.endsWith("/");
     }
@@ -27,10 +23,18 @@ public class StoragePathResolver {
         return objectName.substring(objectName.lastIndexOf('/') + 1);
     }
 
+    public static @NonNull String getParentDirectory(String path) {
+        return path.substring(0, path.lastIndexOf('/'));
+    }
+
     public static @NonNull String getViewFilePath(String objectName, long userId) {
         String userDirectory = getUserDirectory(userId);
         String withoutUserDir = objectName.substring(userDirectory.length());
         int lastSlash = withoutUserDir.lastIndexOf('/');
         return withoutUserDir.substring(0, lastSlash + 1);
+    }
+
+    private static @NonNull String getUserDirectory(long userId) {
+        return "user-%s-files/".formatted(userId);
     }
 }
