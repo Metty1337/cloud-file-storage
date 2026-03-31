@@ -8,6 +8,7 @@ import metty1337.cloudfilestorage.dto.response.storage.StorageFileResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageObjectResponse;
 import metty1337.cloudfilestorage.exception.ObjectAlreadyExistException;
 import metty1337.cloudfilestorage.exception.ObjectNotFoundException;
+import metty1337.cloudfilestorage.exception.StorageAccessException;
 import metty1337.cloudfilestorage.exception.StorageUploadException;
 import metty1337.cloudfilestorage.storage.ObjectData;
 import metty1337.cloudfilestorage.storage.StorageClient;
@@ -58,19 +59,31 @@ public class StorageService {
 
     public StorageObjectResponse getObjectData(String path, long userId) {
         String objectName = StoragePathResolver.getObjectName(path, userId);
+        if (StoragePathResolver.isFile(path)) {
 
-        ObjectData objectData = storageClient.getObjectData(objectName);
+            ObjectData objectData = storageClient.getObjectData(objectName);
 
-        String filePath = StoragePathResolver.getViewFilePath(objectData.name(), userId);
-        String name = StoragePathResolver.getFileName(objectData.name());
-        long size = objectData.size();
+            String filePath = StoragePathResolver.getViewFilePath(objectData.name(), userId);
+            String name = StoragePathResolver.getFileName(objectData.name());
+            long size = objectData.size();
 
-        return new StorageFileResponse(
-                filePath,
-                name,
-                size,
-                ObjectType.FILE.name()
-        );
+            return new StorageFileResponse(
+                    filePath,
+                    name,
+                    size,
+                    ObjectType.FILE.name()
+            );
+        } else if (storageClient.isDirectoryExist(objectName)) {
+            String filePath = StoragePathResolver.getParentPath(path);
+            String name = StoragePathResolver.getDirectoryName(path);
+
+            return new StorageDirectoryResponse(
+                    filePath,
+                    name,
+                    ObjectType.DIRECTORY.name()
+            );
+        }
+        throw new StorageAccessException();
     }
 
     public void deleteObject(String path, long userId) {

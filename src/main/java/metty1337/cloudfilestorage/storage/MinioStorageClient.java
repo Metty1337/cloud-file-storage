@@ -176,7 +176,6 @@ public class MinioStorageClient implements StorageClient {
         }
     }
 
-
     @Override
     public long getFileSize(String objectName) {
         ObjectData objectData = getObjectData(objectName);

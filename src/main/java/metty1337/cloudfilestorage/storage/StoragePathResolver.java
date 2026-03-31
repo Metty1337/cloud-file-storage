@@ -34,6 +34,11 @@ public class StoragePathResolver {
         return withoutUserDir.substring(0, lastSlash + 1);
     }
 
+    public static @NonNull String getParentPath(String objectName) {
+        String dirName = getDirectoryName(objectName);
+        return objectName.substring(0, objectName.length() - dirName.length() - 1);
+    }
+
     private static @NonNull String getUserDirectory(long userId) {
         return "user-%s-files/".formatted(userId);
     }

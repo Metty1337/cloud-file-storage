@@ -4,4 +4,8 @@ public class StorageAccessException extends RuntimeException {
     public StorageAccessException(Throwable cause) {
         super("Failed to access storage", cause);
     }
+
+    public StorageAccessException() {
+        super("Failed to access storage");
+    }
 }
