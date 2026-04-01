@@ -1,12 +1,13 @@
 package metty1337.cloudfilestorage.storage;
 
+import io.minio.Result;
+import io.minio.messages.Item;
 import org.jspecify.annotations.NonNull;
-import org.springframework.core.io.InputStreamResource;
 
 import java.io.InputStream;
 
 public interface StorageClient {
-    @NonNull InputStreamResource getObject(String objectName);
+    @NonNull InputStream getObject(String objectName);
 
     ObjectData getObjectData(String objectName);
 
@@ -27,4 +28,6 @@ public interface StorageClient {
     void moveDirectory(String oldObjectName, String newObjectName);
 
     long getFileSize(String objectName);
+
+    Iterable<Result<Item>> listObjectsByPrefix(String prefix, boolean recursive);
 }

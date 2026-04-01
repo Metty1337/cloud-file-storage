@@ -6,20 +6,21 @@ import metty1337.cloudfilestorage.constants.ObjectType;
 import metty1337.cloudfilestorage.dto.response.storage.StorageDirectoryResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageFileResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageObjectResponse;
-import metty1337.cloudfilestorage.exception.ObjectAlreadyExistException;
-import metty1337.cloudfilestorage.exception.ObjectNotFoundException;
-import metty1337.cloudfilestorage.exception.StorageAccessException;
-import metty1337.cloudfilestorage.exception.StorageUploadException;
+import metty1337.cloudfilestorage.exception.*;
 import metty1337.cloudfilestorage.storage.ObjectData;
 import metty1337.cloudfilestorage.storage.StorageClient;
 import metty1337.cloudfilestorage.storage.StoragePathResolver;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Objects;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Slf4j
 @Service
@@ -51,10 +52,6 @@ public class StorageService {
                     ObjectType.FILE.name()
             );
         }
-    }
-
-    private static boolean isDirectoryFiles(List<MultipartFile> files) {
-        return files.size() > 1;
     }
 
     public StorageObjectResponse getObjectData(String path, long userId) {
@@ -98,7 +95,14 @@ public class StorageService {
     public Resource downloadFile(String path, long userId) {
         String objectName = StoragePathResolver.getObjectName(path, userId);
         ensureFileExists(objectName);
-        return storageClient.getObject(objectName);
+        return new InputStreamResource(storageClient.getObject(objectName));
+    }
+
+    public void downloadFolder(String path, long userId, OutputStream outputStream) {
+        String folderName = StoragePathResolver.getObjectName(path, userId);
+        ensureDirectoryExist(folderName);
+
+        downloadAsZip(outputStream, folderName);
     }
 
     public StorageObjectResponse moveObject(String from, String to, long userId) {
@@ -134,9 +138,83 @@ public class StorageService {
         );
     }
 
+    public List<StorageObjectResponse> searchObject(String query, long userId) {
+        String userDirectory = StoragePathResolver.getUserDirectory(userId);
+        var objects = storageClient.listObjectsByPrefix(userDirectory, true);
+
+        List<StorageObjectResponse> responses = new ArrayList<>();
+        Set<String> directories = new LinkedHashSet<>();
+
+        for (var object : objects) {
+            try {
+                String objectPath = object.get().objectName();
+
+                collectParentDirectory(objectPath, directories);
+
+                if (!objectPath.contains(query)) {
+                    continue;
+                }
+
+                StorageFileResponse response = new StorageFileResponse(
+                        StoragePathResolver.getViewFilePath(objectPath, userId),
+                        StoragePathResolver.getFileName(objectPath),
+                        object.get().size(),
+                        ObjectType.FILE.name()
+                );
+                responses.add(response);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        for (String directory : directories) {
+
+            if (!directory.contains(query)) {
+                continue;
+            }
+
+            StorageDirectoryResponse response = new StorageDirectoryResponse(
+                    StoragePathResolver.getViewFilePath(directory, userId),
+                    StoragePathResolver.getDirectoryName(directory),
+                    ObjectType.DIRECTORY.name()
+            );
+            responses.add(response);
+        }
+        return responses;
+    }
+
+    private void collectParentDirectory(String objectPath, Set<String> directories) {
+        String parentDirectory = StoragePathResolver.getParentDirectory(objectPath) + "/";
+        directories.add(parentDirectory);
+    }
+
     private void deleteDirectory(String objectName) {
         ensureDirectoryExist(objectName);
         storageClient.removeDirectory(objectName);
+    }
+
+    private void downloadAsZip(OutputStream outputStream, String folderName) {
+        try (ZipOutputStream zipOut = new ZipOutputStream(outputStream)) {
+            var objects = storageClient.listObjectsByPrefix(folderName, true);
+
+            for (var object : objects) {
+                String objectName = object.get().objectName();
+
+                String entryName = objectName.substring(folderName.length());
+                zipOut.putNextEntry(new ZipEntry(entryName));
+
+                try (InputStream inputStream = storageClient.getObject(objectName)) {
+                    inputStream.transferTo(zipOut);
+                }
+                zipOut.closeEntry();
+            }
+        } catch (Exception e) {
+            throw new StorageDownloadingException(e);
+        }
+    }
+
+    private static boolean isDirectoryFiles(List<MultipartFile> files) {
+        return files.size() > 1;
     }
 
     private void deleteFile(String objectName) {

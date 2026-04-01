@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import metty1337.cloudfilestorage.config.minio.MinioProperties;
 import metty1337.cloudfilestorage.exception.*;
 import org.jspecify.annotations.NonNull;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
@@ -22,15 +21,14 @@ public class MinioStorageClient implements StorageClient {
     private final MinioProperties minioProperties;
 
     @Override
-    public @NonNull InputStreamResource getObject(String objectName) {
+    public @NonNull InputStream getObject(String objectName) {
         try {
-            InputStream stream = minioClient.getObject(
+            return minioClient.getObject(
                     GetObjectArgs.builder()
                             .bucket(minioProperties.bucket().name())
                             .object(objectName)
                             .build()
             );
-            return new InputStreamResource(stream);
         } catch (Exception e) {
             throw new StorageDownloadingException(e);
         }
@@ -109,7 +107,7 @@ public class MinioStorageClient implements StorageClient {
 
     @Override
     public void removeDirectory(String directoryName) {
-        Iterable<Result<Item>> directoryObjects = listObjectsByPrefix(directoryName);
+        Iterable<Result<Item>> directoryObjects = listObjectsByPrefix(directoryName, true);
         for (Result<Item> directoryObject : directoryObjects) {
             try {
                 removeFile(directoryObject.get().objectName());
@@ -162,7 +160,7 @@ public class MinioStorageClient implements StorageClient {
     @Override
     public void moveDirectory(String oldObjectName, String newObjectName) {
         try {
-            Iterable<Result<Item>> oldObjects = listObjectsByPrefix(oldObjectName);
+            Iterable<Result<Item>> oldObjects = listObjectsByPrefix(oldObjectName, true);
 
             for (Result<Item> oldObject : oldObjects) {
                 String oldName = oldObject.get().objectName();
@@ -182,18 +180,19 @@ public class MinioStorageClient implements StorageClient {
         return objectData.size();
     }
 
-    private String replaceFileNamePrefix(String fileName, String oldPrefix, String newPrefix) {
-        String withoutOldPrefix = fileName.substring(oldPrefix.length());
-        return newPrefix + withoutOldPrefix;
-    }
-
-    private Iterable<Result<Item>> listObjectsByPrefix(String prefix) {
+    @Override
+    public Iterable<Result<Item>> listObjectsByPrefix(String prefix, boolean recursive) {
         return minioClient.listObjects(
                 ListObjectsArgs.builder()
                         .bucket(minioProperties.bucket().name())
                         .prefix(prefix)
-                        .recursive(true)
+                        .recursive(recursive)
                         .build()
         );
+    }
+
+    private String replaceFileNamePrefix(String fileName, String oldPrefix, String newPrefix) {
+        String withoutOldPrefix = fileName.substring(oldPrefix.length());
+        return newPrefix + withoutOldPrefix;
     }
 }
