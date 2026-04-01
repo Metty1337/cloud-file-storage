@@ -183,6 +183,41 @@ public class StorageService {
         return responses;
     }
 
+    public List<StorageObjectResponse> getDirectoryContents(String path, long userId) {
+        String directoryName = StoragePathResolver.getObjectName(path, userId);
+        ensureDirectoryExist(directoryName);
+
+        var objects = storageClient.listObjectsByPrefix(directoryName, false);
+
+        List<StorageObjectResponse> responses = new ArrayList<>();
+        for (var object : objects) {
+
+            try {
+                String objectName = object.get().objectName();
+
+                if (StoragePathResolver.isFile(objectName)) {
+                    StorageFileResponse response = new StorageFileResponse(
+                            StoragePathResolver.getViewFilePath(objectName, userId),
+                            StoragePathResolver.getFileName(objectName),
+                            object.get().size(),
+                            ObjectType.FILE.name()
+                    );
+                    responses.add(response);
+                } else {
+                    StorageDirectoryResponse response = new StorageDirectoryResponse(
+                            StoragePathResolver.getViewFilePath(objectName, userId),
+                            StoragePathResolver.getDirectoryName(objectName),
+                            ObjectType.DIRECTORY.name()
+                    );
+                    responses.add(response);
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return responses;
+    }
+
     private void collectParentDirectory(String objectPath, Set<String> directories) {
         String parentDirectory = StoragePathResolver.getParentDirectory(objectPath) + "/";
         directories.add(parentDirectory);
