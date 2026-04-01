@@ -6,7 +6,10 @@ import metty1337.cloudfilestorage.constants.ObjectType;
 import metty1337.cloudfilestorage.dto.response.storage.StorageDirectoryResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageFileResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageObjectResponse;
-import metty1337.cloudfilestorage.exception.*;
+import metty1337.cloudfilestorage.exception.ObjectAlreadyExistException;
+import metty1337.cloudfilestorage.exception.ObjectNotFoundException;
+import metty1337.cloudfilestorage.exception.StorageDownloadingException;
+import metty1337.cloudfilestorage.exception.StorageUploadException;
 import metty1337.cloudfilestorage.storage.ObjectData;
 import metty1337.cloudfilestorage.storage.StorageClient;
 import metty1337.cloudfilestorage.storage.StoragePathResolver;
@@ -41,7 +44,7 @@ public class StorageService {
         if (isDirectoryFiles(files)) {
             return new StorageDirectoryResponse(
                     path,
-                    StoragePathResolver.getParentDirectory(Objects.requireNonNull(object.getOriginalFilename())),
+                    StoragePathResolver.getParentDirectory(Objects.requireNonNull(object.getOriginalFilename())) + "/",
                     ObjectType.DIRECTORY.name()
             );
         } else {
@@ -70,17 +73,17 @@ public class StorageService {
                     size,
                     ObjectType.FILE.name()
             );
-        } else if (storageClient.isDirectoryExist(objectName)) {
+        } else {
+            ensureFileNotExist(objectName);
             String filePath = StoragePathResolver.getParentPath(path);
             String name = StoragePathResolver.getDirectoryName(path);
 
             return new StorageDirectoryResponse(
                     filePath,
-                    name,
+                    name + "/",
                     ObjectType.DIRECTORY.name()
             );
         }
-        throw new StorageAccessException();
     }
 
     public void deleteObject(String path, long userId) {
@@ -133,7 +136,7 @@ public class StorageService {
 
         return new StorageDirectoryResponse(
                 StoragePathResolver.getViewFilePath(newObjectName, userId),
-                StoragePathResolver.getDirectoryName(newObjectName),
+                StoragePathResolver.getDirectoryName(newObjectName) + "/",
                 ObjectType.DIRECTORY.name()
         );
     }
@@ -175,7 +178,7 @@ public class StorageService {
 
             StorageDirectoryResponse response = new StorageDirectoryResponse(
                     StoragePathResolver.getViewFilePath(directory, userId),
-                    StoragePathResolver.getDirectoryName(directory),
+                    StoragePathResolver.getDirectoryName(directory) + "/",
                     ObjectType.DIRECTORY.name()
             );
             responses.add(response);
@@ -204,9 +207,19 @@ public class StorageService {
                     );
                     responses.add(response);
                 } else {
+                    if (objectName.equals(directoryName)) {
+                        continue;
+                    }
+
+                    String directoryPath = StoragePathResolver.getDirectoryName(objectName);
+
+                    if (directoryPath.equals(StoragePathResolver.getUserDirectory(userId).substring(0, directoryPath.length()))) {
+                        continue;
+                    }
+
                     StorageDirectoryResponse response = new StorageDirectoryResponse(
-                            StoragePathResolver.getViewFilePath(objectName, userId),
-                            StoragePathResolver.getDirectoryName(objectName),
+                            path,
+                            directoryPath + "/",
                             ObjectType.DIRECTORY.name()
                     );
                     responses.add(response);
@@ -220,15 +233,18 @@ public class StorageService {
 
     public StorageDirectoryResponse createDirectory(String path, long userId) {
         String directoryName = StoragePathResolver.getObjectName(path, userId);
+        ensureDirectoryNotExist(directoryName);
 
         String parentDirectory = StoragePathResolver.getParentPath(directoryName);
-        ensureDirectoryExist(parentDirectory);
+        if (StoragePathResolver.countSlashes(path) > 1) {
+            ensureDirectoryExist(parentDirectory);
+        }
 
         storageClient.createDirectory(directoryName);
 
         return new StorageDirectoryResponse(
-                StoragePathResolver.getViewFilePath(directoryName, userId),
-                StoragePathResolver.getDirectoryName(directoryName),
+                StoragePathResolver.getViewFilePath(parentDirectory, userId),
+                StoragePathResolver.getDirectoryName(directoryName) + "/",
                 ObjectType.DIRECTORY.name()
         );
     }
@@ -275,6 +291,12 @@ public class StorageService {
     private void ensureDirectoryExist(String objectName) {
         if (!storageClient.isDirectoryExist(objectName)) {
             throw new ObjectNotFoundException();
+        }
+    }
+
+    private void ensureDirectoryNotExist(String objectName) {
+        if (storageClient.isDirectoryExist(objectName)) {
+            throw new ObjectAlreadyExistException();
         }
     }
 

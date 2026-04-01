@@ -39,6 +39,10 @@ public class StoragePathResolver {
         return objectName.substring(0, objectName.length() - dirName.length() - 1);
     }
 
+    public static long countSlashes(String s) {
+        return s.chars().filter(c -> c == '/').count();
+    }
+
     public static @NonNull String getUserDirectory(long userId) {
         return "user-%s-files/".formatted(userId);
     }

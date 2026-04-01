@@ -141,7 +141,7 @@ public class MinioStorageClient implements StorageClient {
                 ListObjectsArgs.builder()
                         .bucket(minioProperties.bucket().name())
                         .prefix(directoryName)
-                        .recursive(true)
+                        .recursive(false)
                         .maxKeys(1)
                         .build()
         );
