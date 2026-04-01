@@ -39,9 +39,9 @@ services:
 
 secrets:
   db_password:
-    file: ./secrets/db_password.txt
+    file: backend/secrets/db_password.txt
   minio_password:
-    file: ./secrets/minio_password
+    file: backend/secrets/minio_password
 
 volumes:
   postgres_data:

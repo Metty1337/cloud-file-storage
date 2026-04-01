@@ -8,14 +8,14 @@ spring:
   config:
     activate:
       on-profile: dev
-    import: "optional:configtree:./secrets/"
+    import: "optional:configtree:./backend/secrets/"
   docker:
     compose:
       enabled: false
   datasource:
     url: jdbc:postgresql://localhost:5432/cloud-storage-db
     username: postgres
-    password: ${spring.datasource.password}
+    password:
   jpa:
     show-sql: true
     hibernate:
@@ -33,6 +33,6 @@ minio:
   url: http://localhost:9000
   access:
     name: minioadmin
-    secret: ${minio.access.secret}
+    secret:
   bucket:
     name: user-files

@@ -38,9 +38,9 @@ services:
 
 secrets:
   db_password:
-    file: ./secrets/db_password.txt
+    file: backend/secrets/db_password.txt
   spring_datasource_password:
-    file: ./secrets/spring.datasource.password
+    file: backend/secrets/spring.datasource.password
 
 volumes:
   postgres_data:
