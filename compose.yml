@@ -1,6 +1,6 @@
 services:
   backend:
-    build: .
+    build: ./backend
     ports:
       - "127.0.0.1:8080:8080"
     environment:
@@ -8,11 +8,17 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/cloud-storage-db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_CONFIG_IMPORT: "optional:configtree:/run/secrets/"
+      MINIO_URL: http://minio:9000
+      MINIO_ACCESS_NAME: minioadmin
     secrets:
       - source: spring_datasource_password
         target: spring.datasource.password
+      - source: minio_access_secret
+        target: minio.access.secret
     depends_on:
       postgres:
+        condition: service_healthy
+      minio:
         condition: service_healthy
     restart: unless-stopped
 
@@ -36,11 +42,43 @@ services:
       start_period: 10s
     restart: unless-stopped
 
+  minio:
+    image: 'minio/minio:RELEASE.2025-09-07T16-13-09Z-cpuv1'
+    entrypoint: /bin/sh -c 'export MINIO_ROOT_PASSWORD=$$(cat /run/secrets/minio_password) && minio server /data --console-address ":9001"'
+    environment:
+      MINIO_ROOT_USER: minioadmin
+    secrets:
+      - minio_password
+    volumes:
+      - minio_data:/data
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+    healthcheck:
+      test: [ "CMD", "mc", "ready", "local" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+
 secrets:
   db_password:
     file: backend/secrets/db_password.txt
   spring_datasource_password:
     file: backend/secrets/spring.datasource.password
+  minio_password:
+    file: backend/secrets/minio_password
+  minio_access_secret:
+    file: backend/secrets/minio.access.secret
 
 volumes:
   postgres_data:
+  minio_data:
