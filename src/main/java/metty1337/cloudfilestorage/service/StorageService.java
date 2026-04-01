@@ -218,6 +218,21 @@ public class StorageService {
         return responses;
     }
 
+    public StorageDirectoryResponse createDirectory(String path, long userId) {
+        String directoryName = StoragePathResolver.getObjectName(path, userId);
+
+        String parentDirectory = StoragePathResolver.getParentPath(directoryName);
+        ensureDirectoryExist(parentDirectory);
+
+        storageClient.createDirectory(directoryName);
+
+        return new StorageDirectoryResponse(
+                StoragePathResolver.getViewFilePath(directoryName, userId),
+                StoragePathResolver.getDirectoryName(directoryName),
+                ObjectType.DIRECTORY.name()
+        );
+    }
+
     private void collectParentDirectory(String objectPath, Set<String> directories) {
         String parentDirectory = StoragePathResolver.getParentDirectory(objectPath) + "/";
         directories.add(parentDirectory);

@@ -30,4 +30,6 @@ public interface StorageClient {
     long getFileSize(String objectName);
 
     Iterable<Result<Item>> listObjectsByPrefix(String prefix, boolean recursive);
+
+    void createDirectory(String directoryName);
 }

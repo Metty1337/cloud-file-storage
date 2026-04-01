@@ -2,7 +2,7 @@ package metty1337.cloudfilestorage.storage;
 
 
 import io.minio.*;
-import io.minio.errors.ErrorResponseException;
+import io.minio.errors.*;
 import io.minio.messages.Item;
 import lombok.RequiredArgsConstructor;
 import metty1337.cloudfilestorage.config.minio.MinioProperties;
@@ -10,6 +10,7 @@ import metty1337.cloudfilestorage.exception.*;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 @Component
@@ -189,6 +190,21 @@ public class MinioStorageClient implements StorageClient {
                         .recursive(recursive)
                         .build()
         );
+    }
+
+    @Override
+    public void createDirectory(String directoryName) {
+        try {
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(minioProperties.bucket().name())
+                            .object(directoryName)
+                            .stream(new ByteArrayInputStream(new byte[0]), 0, -1)
+                            .build()
+            );
+        } catch (Exception e) {
+            throw new StorageCreatingException(e);
+        }
     }
 
     private String replaceFileNamePrefix(String fileName, String oldPrefix, String newPrefix) {
