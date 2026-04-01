@@ -152,19 +152,21 @@ public class StorageService {
             try {
                 String objectPath = object.get().objectName();
 
-                collectParentDirectory(objectPath, directories);
+                if (StoragePathResolver.isFile(objectPath)) {
+                    collectParentDirectory(objectPath, directories);
 
-                if (!objectPath.contains(query)) {
-                    continue;
+                    if (!objectPath.contains(query)) {
+                        continue;
+                    }
+
+                    StorageFileResponse response = new StorageFileResponse(
+                            StoragePathResolver.getViewFilePath(objectPath, userId),
+                            StoragePathResolver.getFileName(objectPath),
+                            object.get().size(),
+                            ObjectType.FILE.name()
+                    );
+                    responses.add(response);
                 }
-
-                StorageFileResponse response = new StorageFileResponse(
-                        StoragePathResolver.getViewFilePath(objectPath, userId),
-                        StoragePathResolver.getFileName(objectPath),
-                        object.get().size(),
-                        ObjectType.FILE.name()
-                );
-                responses.add(response);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
