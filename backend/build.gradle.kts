@@ -50,6 +50,7 @@ dependencies {
     add("mockitoAgent", "org.mockito:mockito-core") { isTransitive = false }
     implementation("io.minio:minio:8.6.0")
     implementation("org.springframework.boot:spring-boot-configuration-processor")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2")
 }
 tasks.withType<Test> {
     useJUnitPlatform()

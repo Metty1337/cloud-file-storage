@@ -1,4 +1,10 @@
 package metty1337.cloudfilestorage.dto.response;
 
-public record UserResponse(String username) {
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "User profile response")
+public record UserResponse(
+        @Schema(description = "Username", example = "johndoe")
+        String username
+) {
 }
