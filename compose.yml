@@ -10,15 +10,21 @@ services:
       SPRING_CONFIG_IMPORT: "optional:configtree:/run/secrets/"
       MINIO_URL: http://minio:9000
       MINIO_ACCESS_NAME: minioadmin
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
     secrets:
-      - source: spring_datasource_password
+      - source: db_password
         target: spring.datasource.password
-      - source: minio_access_secret
+      - source: minio_password
         target: minio.access.secret
+      - source: redis_password
+        target: spring.data.redis.password
     depends_on:
       postgres:
         condition: service_healthy
       minio:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     restart: unless-stopped
 
@@ -68,16 +74,27 @@ services:
     depends_on:
       - backend
 
+  redis:
+    image: redis:8-alpine
+    command: sh -c "redis-server --requirepass $$(cat /run/secrets/redis_password)"
+    secrets:
+      - redis_password
+    ports:
+      - "127.0.0.1:6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
 
 secrets:
   db_password:
     file: backend/secrets/db_password.txt
-  spring_datasource_password:
-    file: backend/secrets/spring.datasource.password
   minio_password:
     file: backend/secrets/minio_password
-  minio_access_secret:
-    file: backend/secrets/minio.access.secret
+  redis_password:
+    file: backend/secrets/redis_password
 
 volumes:
   postgres_data:

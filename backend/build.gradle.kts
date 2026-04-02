@@ -51,6 +51,8 @@ dependencies {
     implementation("io.minio:minio:8.6.0")
     implementation("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2")
+    implementation("org.springframework.session:spring-session-data-redis:4.0.2")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
 }
 tasks.withType<Test> {
     useJUnitPlatform()

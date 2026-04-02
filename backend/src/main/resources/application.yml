@@ -25,10 +25,20 @@ spring:
     enabled: true
     locations: classpath:db/migration
     validate-on-migrate: true
-server:
-  servlet:
-    session:
-      timeout: 100000000s
+  session:
+    timeout: 1000000m
+    redis:
+      namespace: spring:session
+  data:
+    redis:
+      host: redis
+      port: 6379
+      password:
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
 minio:
   url: http://localhost:9000
   access:
