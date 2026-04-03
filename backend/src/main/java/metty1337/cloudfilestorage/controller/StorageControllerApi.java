@@ -20,6 +20,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
@@ -83,7 +84,7 @@ public interface StorageControllerApi {
     })
     ResponseEntity<StreamingResponseBody> downloadObject(@Valid StoragePathRequest request, @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal user);
 
-    @GetMapping("/move")
+    @PutMapping("/move")
     @Operation(summary = "Move or rename object", description = "Moves an object from one path to another")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Object moved successfully"),

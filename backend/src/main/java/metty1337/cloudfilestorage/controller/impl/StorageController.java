@@ -80,7 +80,7 @@ public class StorageController implements StorageControllerApi {
                 .body(stream);
     }
 
-    @GetMapping("/move")
+    @PutMapping("/move")
     @Override
     public ResponseEntity<StorageObjectResponse> moveObject(@Valid StorageMoveRequest request, @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal user) {
         StorageObjectResponse response = storageService.moveObject(request.from(), request.to(), user.getId());
