@@ -4,7 +4,7 @@ services:
     ports:
       - "127.0.0.1:8080:8080"
     environment:
-      SPRING_PROFILES_ACTIVE: dev
+      SPRING_PROFILES_ACTIVE: prod
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/cloud-storage-db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_CONFIG_IMPORT: "optional:configtree:/run/secrets/"
