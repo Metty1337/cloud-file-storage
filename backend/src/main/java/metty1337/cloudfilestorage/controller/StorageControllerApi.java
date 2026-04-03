@@ -8,39 +8,26 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import metty1337.cloudfilestorage.dto.request.StorageMoveRequest;
 import metty1337.cloudfilestorage.dto.request.StoragePathRequest;
 import metty1337.cloudfilestorage.dto.request.StorageSearchRequest;
 import metty1337.cloudfilestorage.dto.request.StorageUploadRequest;
 import metty1337.cloudfilestorage.dto.response.ErrorResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageObjectResponse;
-import metty1337.cloudfilestorage.exception.EmptyFileException;
 import metty1337.cloudfilestorage.security.UserPrincipal;
-import metty1337.cloudfilestorage.service.StorageService;
-import metty1337.cloudfilestorage.storage.StoragePathResolver;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import java.io.InputStream;
 import java.util.List;
 
-@RestController
-@RequestMapping("/api/resource")
-@RequiredArgsConstructor
-@Validated
 @Tag(name = "Storage", description = "Storage object operations (files and folders)")
-public class StorageController {
-
-    private final StorageService storageService;
-
+public interface StorageControllerApi {
     @PostMapping
     @Operation(summary = "Upload objects", description = "Uploads one or more objects to the specified path")
     @ApiResponses({
@@ -54,14 +41,7 @@ public class StorageController {
             @ApiResponse(responseCode = "500", description = "Internal server error",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<StorageObjectResponse> uploadObject(@RequestParam("object") List<MultipartFile> files, @Valid StorageUploadRequest request, @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal user) {
-        if (files.isEmpty()) {
-            throw new EmptyFileException();
-        }
-
-        StorageObjectResponse response = storageService.uploadObject(files, request.path(), user.getId());
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
+    ResponseEntity<StorageObjectResponse> uploadObject(@RequestParam("object") List<MultipartFile> files, @Valid StorageUploadRequest request, @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal user);
 
     @GetMapping
     @Operation(summary = "Get object metadata", description = "Returns metadata for an object at the specified path")
@@ -74,10 +54,7 @@ public class StorageController {
             @ApiResponse(responseCode = "500", description = "Internal server error",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<StorageObjectResponse> getObjectData(@Valid StoragePathRequest request, @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal user) {
-        StorageObjectResponse response = storageService.getObjectData(request.path(), user.getId());
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
+    ResponseEntity<StorageObjectResponse> getObjectData(@Valid StoragePathRequest request, @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal user);
 
     @DeleteMapping
     @Operation(summary = "Delete object", description = "Deletes an object at the specified path")
@@ -90,10 +67,7 @@ public class StorageController {
             @ApiResponse(responseCode = "500", description = "Internal server error",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<Void> deleteObject(@Valid StoragePathRequest request, @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal user) {
-        storageService.deleteObject(request.path(), user.getId());
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
+    ResponseEntity<Void> deleteObject(@Valid StoragePathRequest request, @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal user);
 
     @GetMapping("/download")
     @Operation(summary = "Download object", description = "Downloads an object as a raw stream or a folder as a ZIP archive")
@@ -107,24 +81,7 @@ public class StorageController {
             @ApiResponse(responseCode = "500", description = "Internal server error",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<StreamingResponseBody> downloadObject(@Valid StoragePathRequest request, @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal user) {
-        if (StoragePathResolver.isFile(request.path())) {
-            Resource resource = storageService.downloadFile(request.path(), user.getId());
-            StreamingResponseBody stream = output -> {
-                try (InputStream inputStream = resource.getInputStream()) {
-                    inputStream.transferTo(output);
-                }
-            };
-            return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .body(stream);
-        }
-
-        StreamingResponseBody stream = output -> storageService.downloadFolder(request.path(), user.getId(), output);
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType("application/zip"))
-                .body(stream);
-    }
+    ResponseEntity<StreamingResponseBody> downloadObject(@Valid StoragePathRequest request, @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal user);
 
     @GetMapping("/move")
     @Operation(summary = "Move or rename object", description = "Moves an object from one path to another")
@@ -141,10 +98,7 @@ public class StorageController {
             @ApiResponse(responseCode = "500", description = "Internal server error",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<StorageObjectResponse> moveObject(@Valid StorageMoveRequest request, @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal user) {
-        StorageObjectResponse response = storageService.moveObject(request.from(), request.to(), user.getId());
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
+    ResponseEntity<StorageObjectResponse> moveObject(@Valid StorageMoveRequest request, @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal user);
 
     @GetMapping("/search")
     @Operation(summary = "Search objects", description = "Searches for objects matching the query")
@@ -155,8 +109,5 @@ public class StorageController {
             @ApiResponse(responseCode = "500", description = "Internal server error",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<List<StorageObjectResponse>> searchObject(@Valid StorageSearchRequest request, @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal user) {
-        List<StorageObjectResponse> response = storageService.searchObject(request.query(), user.getId());
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
+    ResponseEntity<List<StorageObjectResponse>> searchObject(@Valid StorageSearchRequest request, @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal user);
 }
