@@ -113,7 +113,7 @@ public class MinioStorageClient implements StorageClient {
             try {
                 removeFile(directoryObject.get().objectName());
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new StorageObjectDeletionException(e);
             }
         }
     }

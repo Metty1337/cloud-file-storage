@@ -6,10 +6,7 @@ import metty1337.cloudfilestorage.constants.ObjectType;
 import metty1337.cloudfilestorage.dto.response.storage.StorageDirectoryResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageFileResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageObjectResponse;
-import metty1337.cloudfilestorage.exception.ObjectAlreadyExistException;
-import metty1337.cloudfilestorage.exception.ObjectNotFoundException;
-import metty1337.cloudfilestorage.exception.StorageDownloadingException;
-import metty1337.cloudfilestorage.exception.StorageUploadException;
+import metty1337.cloudfilestorage.exception.*;
 import metty1337.cloudfilestorage.storage.ObjectData;
 import metty1337.cloudfilestorage.storage.StorageClient;
 import metty1337.cloudfilestorage.storage.StoragePathResolver;
@@ -33,9 +30,13 @@ public class StorageService {
     private final StorageClient storageClient;
 
     public StorageObjectResponse uploadObject(List<MultipartFile> files, String path, long userId) {
-        for (MultipartFile file : files) {
-            String objectName = StoragePathResolver.getObjectName(path, userId) + file.getOriginalFilename();
+        Set<String> createdDirectories = new HashSet<>();
+        String basePath = StoragePathResolver.getObjectName(path, userId);
 
+        for (MultipartFile file : files) {
+            String objectName = basePath + file.getOriginalFilename();
+
+            createParentDirectories(objectName, basePath, createdDirectories);
             ensureFileNotExist(objectName);
             uploadFile(file, objectName);
         }
@@ -74,7 +75,7 @@ public class StorageService {
                     ObjectType.FILE.name()
             );
         } else {
-            ensureFileNotExist(objectName);
+            ensureDirectoryExist(objectName);
             String filePath = StoragePathResolver.getParentPath(path);
             String name = StoragePathResolver.getDirectoryName(path);
 
@@ -150,7 +151,8 @@ public class StorageService {
 
         for (var object : objects) {
             try {
-                String objectPath = object.get().objectName();
+                var item = object.get();
+                String objectPath = item.objectName();
 
                 if (StoragePathResolver.isFile(objectPath)) {
                     collectParentDirectory(objectPath, directories);
@@ -162,13 +164,13 @@ public class StorageService {
                     StorageFileResponse response = new StorageFileResponse(
                             StoragePathResolver.getViewFilePath(objectPath, userId),
                             StoragePathResolver.getFileName(objectPath),
-                            object.get().size(),
+                            item.size(),
                             ObjectType.FILE.name()
                     );
                     responses.add(response);
                 }
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new StorageSearingException(e);
             }
         }
 
@@ -195,16 +197,18 @@ public class StorageService {
         var objects = storageClient.listObjectsByPrefix(directoryName, false);
 
         List<StorageObjectResponse> responses = new ArrayList<>();
+        String userDirectory = StoragePathResolver.getUserDirectory(userId);
         for (var object : objects) {
 
             try {
-                String objectName = object.get().objectName();
+                var item = object.get();
+                String objectName = item.objectName();
 
                 if (StoragePathResolver.isFile(objectName)) {
                     StorageFileResponse response = new StorageFileResponse(
                             StoragePathResolver.getViewFilePath(objectName, userId),
                             StoragePathResolver.getFileName(objectName),
-                            object.get().size(),
+                            item.size(),
                             ObjectType.FILE.name()
                     );
                     responses.add(response);
@@ -213,11 +217,11 @@ public class StorageService {
                         continue;
                     }
 
-                    String directoryPath = StoragePathResolver.getDirectoryName(objectName);
-
-                    if (directoryPath.equals(StoragePathResolver.getUserDirectory(userId).substring(0, directoryPath.length()))) {
+                    if (objectName.equals(userDirectory)) {
                         continue;
                     }
+
+                    String directoryPath = StoragePathResolver.getDirectoryName(objectName);
 
                     StorageDirectoryResponse response = new StorageDirectoryResponse(
                             path,
@@ -227,7 +231,7 @@ public class StorageService {
                     responses.add(response);
                 }
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new StorageAccessException(e);
             }
         }
         return responses;
@@ -283,6 +287,14 @@ public class StorageService {
 
     private static boolean isDirectoryFiles(List<MultipartFile> files) {
         return files.size() > 1;
+    }
+
+    private void createParentDirectories(String objectName, String basePath, Set<String> createdDirectories) {
+        for (String dirPath : StoragePathResolver.getIntermediateDirectories(objectName, basePath)) {
+            if (createdDirectories.add(dirPath) && !storageClient.isDirectoryExist(dirPath)) {
+                storageClient.createDirectory(dirPath);
+            }
+        }
     }
 
     private void deleteFile(String objectName) {

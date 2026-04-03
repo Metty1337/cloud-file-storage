@@ -3,6 +3,9 @@ package metty1337.cloudfilestorage.storage;
 import lombok.experimental.UtilityClass;
 import org.jspecify.annotations.NonNull;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @UtilityClass
 public class StoragePathResolver {
 
@@ -45,5 +48,18 @@ public class StoragePathResolver {
 
     public static @NonNull String getUserDirectory(long userId) {
         return "user-%s-files/".formatted(userId);
+    }
+
+    public static @NonNull List<String> getIntermediateDirectories(String objectName, String basePath) {
+        String relativePath = objectName.substring(basePath.length());
+        String[] parts = relativePath.split("/");
+
+        List<String> directories = new ArrayList<>();
+        StringBuilder currentPath = new StringBuilder(basePath);
+        for (int i = 0; i < parts.length - 1; i++) {
+            currentPath.append(parts[i]).append("/");
+            directories.add(currentPath.toString());
+        }
+        return directories;
     }
 }
