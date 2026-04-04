@@ -201,11 +201,13 @@ public class StorageServiceImpl implements StorageService {
     @Override
     public List<StorageObjectResponse> getDirectoryContents(String path, long userId) {
         String directoryName = StoragePathResolver.getObjectName(path, userId);
-        ensureDirectoryExist(directoryName);
+        List<StorageObjectResponse> responses = new ArrayList<>();
+        if (!storageClient.isDirectoryExist(directoryName)) {
+            return responses;
+        }
 
         var objects = storageClient.listObjectsByPrefix(directoryName, false);
 
-        List<StorageObjectResponse> responses = new ArrayList<>();
         String userDirectory = StoragePathResolver.getUserDirectory(userId);
         for (var object : objects) {
 
