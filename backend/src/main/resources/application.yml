@@ -95,7 +95,7 @@ server:
     max-part-count: 100
 springdoc:
   api-docs:
-    enabled: false
+    enabled: true
   swagger-ui:
     enabled: true
 minio:
