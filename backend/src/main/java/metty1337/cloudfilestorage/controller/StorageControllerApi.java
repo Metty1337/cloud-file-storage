@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import java.io.IOException;
 import java.util.List;
 
 @Tag(name = "Storage", description = "Storage object operations (files and folders)")
@@ -39,7 +40,7 @@ public interface StorageControllerApi {
             @ApiResponse(responseCode = "500", description = "Internal server error",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    ResponseEntity<StorageObjectResponse> uploadObject(@NotEmpty @RequestParam("object") List<MultipartFile> files, @Valid StorageUploadRequest request, @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal user);
+    ResponseEntity<StorageObjectResponse> uploadObject(@NotEmpty @RequestParam("object") List<MultipartFile> files, @Valid StorageUploadRequest request, @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal user) throws IOException;
 
     @GetMapping
     @Operation(summary = "Get object metadata", description = "Returns metadata for an object at the specified path")

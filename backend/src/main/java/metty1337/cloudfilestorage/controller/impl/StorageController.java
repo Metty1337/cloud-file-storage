@@ -11,6 +11,7 @@ import metty1337.cloudfilestorage.dto.request.StorageSearchRequest;
 import metty1337.cloudfilestorage.dto.request.StorageUploadRequest;
 import metty1337.cloudfilestorage.dto.response.DownloadResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageObjectResponse;
+import metty1337.cloudfilestorage.mapper.StorageMapper;
 import metty1337.cloudfilestorage.security.UserPrincipal;
 import metty1337.cloudfilestorage.service.StorageService;
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -31,11 +33,12 @@ import java.util.List;
 public class StorageController implements StorageControllerApi {
 
     private final StorageService storageService;
+    private final StorageMapper storageMapper;
 
     @PostMapping
     @Override
-    public ResponseEntity<StorageObjectResponse> uploadObject(@NotEmpty @RequestParam("object") List<MultipartFile> files, @Valid StorageUploadRequest request, @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal user) {
-        StorageObjectResponse response = storageService.uploadObject(files, request.path(), user.getId());
+    public ResponseEntity<StorageObjectResponse> uploadObject(@NotEmpty @RequestParam("object") List<MultipartFile> files, @Valid StorageUploadRequest request, @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal user) throws IOException {
+        StorageObjectResponse response = storageService.uploadObject(storageMapper.toFileUploadData(files), request.path(), user.getId());
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 

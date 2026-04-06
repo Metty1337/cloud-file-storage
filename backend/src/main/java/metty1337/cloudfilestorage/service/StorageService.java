@@ -1,14 +1,14 @@
 package metty1337.cloudfilestorage.service;
 
+import metty1337.cloudfilestorage.dto.request.FileUploadData;
 import metty1337.cloudfilestorage.dto.response.DownloadResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageDirectoryResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageObjectResponse;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 public interface StorageService {
-    StorageObjectResponse uploadObject(List<MultipartFile> files, String path, long userId);
+    StorageObjectResponse uploadObject(List<FileUploadData> files, String path, long userId);
 
     StorageObjectResponse getObjectData(String path, long userId);
 

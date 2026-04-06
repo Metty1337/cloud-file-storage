@@ -3,6 +3,7 @@ package metty1337.cloudfilestorage.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import metty1337.cloudfilestorage.constants.ObjectType;
+import metty1337.cloudfilestorage.dto.request.FileUploadData;
 import metty1337.cloudfilestorage.dto.response.DownloadResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageDirectoryResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageFileResponse;
@@ -12,16 +13,13 @@ import metty1337.cloudfilestorage.exception.ObjectNotFoundException;
 import metty1337.cloudfilestorage.exception.storage.StorageAccessException;
 import metty1337.cloudfilestorage.exception.storage.StorageDownloadingException;
 import metty1337.cloudfilestorage.exception.storage.StorageSearchingException;
-import metty1337.cloudfilestorage.exception.storage.StorageUploadException;
 import metty1337.cloudfilestorage.service.StorageService;
 import metty1337.cloudfilestorage.storage.ObjectData;
 import metty1337.cloudfilestorage.storage.StorageClient;
 import metty1337.cloudfilestorage.storage.StoragePathResolver;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.*;
@@ -36,30 +34,30 @@ public class StorageServiceImpl implements StorageService {
     private final StorageClient storageClient;
 
     @Override
-    public StorageObjectResponse uploadObject(List<MultipartFile> files, String path, long userId) {
+    public StorageObjectResponse uploadObject(List<FileUploadData> files, String path, long userId) {
         Set<String> createdDirectories = new HashSet<>();
         String basePath = StoragePathResolver.getObjectName(path, userId);
 
-        for (MultipartFile file : files) {
-            String objectName = basePath + file.getOriginalFilename();
+        for (FileUploadData file : files) {
+            String objectName = basePath + file.filename();
 
             createParentDirectories(objectName, basePath, createdDirectories);
             ensureFileNotExist(objectName);
             uploadFile(file, objectName);
         }
 
-        MultipartFile object = files.getFirst();
+        FileUploadData object = files.getFirst();
         if (isDirectoryFiles(files)) {
             return new StorageDirectoryResponse(
                     path,
-                    StoragePathResolver.getParentDirectory(Objects.requireNonNull(object.getOriginalFilename())) + "/",
+                    StoragePathResolver.getParentDirectory(Objects.requireNonNull(object.filename())) + "/",
                     ObjectType.DIRECTORY
             );
         } else {
             return new StorageFileResponse(
                     path,
-                    object.getOriginalFilename(),
-                    object.getSize(),
+                    object.filename(),
+                    object.size(),
                     ObjectType.FILE
             );
         }
@@ -310,7 +308,7 @@ public class StorageServiceImpl implements StorageService {
         }
     }
 
-    private static boolean isDirectoryFiles(List<MultipartFile> files) {
+    private static boolean isDirectoryFiles(List<FileUploadData> files) {
         return files.size() > 1;
     }
 
@@ -339,12 +337,8 @@ public class StorageServiceImpl implements StorageService {
         }
     }
 
-    private void uploadFile(MultipartFile multipartFile, String objectName) {
-        try {
-            storageClient.uploadFile(objectName, multipartFile.getInputStream(), multipartFile.getSize(), multipartFile.getContentType());
-        } catch (IOException e) {
-            throw new StorageUploadException(e);
-        }
+    private void uploadFile(FileUploadData file, String objectName) {
+        storageClient.uploadFile(objectName, file.content(), file.size(), file.contentType());
     }
 
     private void ensureFileExists(String objectName) {
