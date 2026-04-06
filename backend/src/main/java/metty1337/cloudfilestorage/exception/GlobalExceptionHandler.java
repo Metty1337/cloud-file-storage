@@ -1,5 +1,6 @@
 package metty1337.cloudfilestorage.exception;
 
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import metty1337.cloudfilestorage.dto.response.ErrorResponse;
 import org.jspecify.annotations.NonNull;
@@ -54,8 +55,8 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler(EmptyFileException.class)
-    public ResponseEntity<ErrorResponse> handleEmptyFileException(EmptyFileException e) {
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolationException(ConstraintViolationException e) {
         log.warn(e.getMessage());
 
         ErrorResponse errorResponse = new ErrorResponse(e.getMessage());

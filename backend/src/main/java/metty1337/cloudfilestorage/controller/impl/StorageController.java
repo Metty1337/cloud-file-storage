@@ -2,6 +2,7 @@ package metty1337.cloudfilestorage.controller.impl;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import metty1337.cloudfilestorage.controller.StorageControllerApi;
 import metty1337.cloudfilestorage.dto.request.StorageMoveRequest;
@@ -10,7 +11,6 @@ import metty1337.cloudfilestorage.dto.request.StorageSearchRequest;
 import metty1337.cloudfilestorage.dto.request.StorageUploadRequest;
 import metty1337.cloudfilestorage.dto.response.DownloadResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageObjectResponse;
-import metty1337.cloudfilestorage.exception.EmptyFileException;
 import metty1337.cloudfilestorage.security.UserPrincipal;
 import metty1337.cloudfilestorage.service.StorageService;
 import org.springframework.http.HttpStatus;
@@ -34,11 +34,7 @@ public class StorageController implements StorageControllerApi {
 
     @PostMapping
     @Override
-    public ResponseEntity<StorageObjectResponse> uploadObject(@RequestParam("object") List<MultipartFile> files, @Valid StorageUploadRequest request, @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal user) {
-        if (files.isEmpty()) {
-            throw new EmptyFileException();
-        }
-
+    public ResponseEntity<StorageObjectResponse> uploadObject(@NotEmpty @RequestParam("object") List<MultipartFile> files, @Valid StorageUploadRequest request, @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal user) {
         StorageObjectResponse response = storageService.uploadObject(files, request.path(), user.getId());
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
