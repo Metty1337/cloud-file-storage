@@ -7,7 +7,12 @@ import metty1337.cloudfilestorage.dto.response.DownloadResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageDirectoryResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageFileResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageObjectResponse;
-import metty1337.cloudfilestorage.exception.*;
+import metty1337.cloudfilestorage.exception.ObjectAlreadyExistException;
+import metty1337.cloudfilestorage.exception.ObjectNotFoundException;
+import metty1337.cloudfilestorage.exception.storage.StorageAccessException;
+import metty1337.cloudfilestorage.exception.storage.StorageDownloadingException;
+import metty1337.cloudfilestorage.exception.storage.StorageSearchingException;
+import metty1337.cloudfilestorage.exception.storage.StorageUploadException;
 import metty1337.cloudfilestorage.service.StorageService;
 import metty1337.cloudfilestorage.storage.ObjectData;
 import metty1337.cloudfilestorage.storage.StorageClient;
@@ -186,7 +191,7 @@ public class StorageServiceImpl implements StorageService {
                     responses.add(response);
                 }
             } catch (Exception e) {
-                throw new StorageSearingException(e);
+                throw new StorageSearchingException(e);
             }
         }
 

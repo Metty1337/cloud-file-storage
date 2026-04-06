@@ -2,11 +2,12 @@ package metty1337.cloudfilestorage.storage;
 
 
 import io.minio.*;
-import io.minio.errors.*;
+import io.minio.errors.ErrorResponseException;
 import io.minio.messages.Item;
 import lombok.RequiredArgsConstructor;
 import metty1337.cloudfilestorage.config.minio.MinioProperties;
-import metty1337.cloudfilestorage.exception.*;
+import metty1337.cloudfilestorage.exception.ObjectNotFoundException;
+import metty1337.cloudfilestorage.exception.storage.*;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 

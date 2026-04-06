@@ -3,6 +3,7 @@ package metty1337.cloudfilestorage.exception;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import metty1337.cloudfilestorage.dto.response.ErrorResponse;
+import metty1337.cloudfilestorage.exception.storage.StorageException;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -101,6 +102,14 @@ public class GlobalExceptionHandler {
 
         ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.CONTENT_TOO_LARGE);
+    }
+
+    @ExceptionHandler(StorageException.class)
+    public ResponseEntity<ErrorResponse> handleStorageException(StorageException e) {
+        log.warn(e.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     private static @NonNull String getErrorMessage(MethodArgumentNotValidException ex) {
