@@ -48,14 +48,14 @@ public class StorageServiceImpl implements StorageService {
             return new StorageDirectoryResponse(
                     path,
                     StoragePathResolver.getParentDirectory(Objects.requireNonNull(object.getOriginalFilename())) + "/",
-                    ObjectType.DIRECTORY.name()
+                    ObjectType.DIRECTORY
             );
         } else {
             return new StorageFileResponse(
                     path,
                     object.getOriginalFilename(),
                     object.getSize(),
-                    ObjectType.FILE.name()
+                    ObjectType.FILE
             );
         }
     }
@@ -75,7 +75,7 @@ public class StorageServiceImpl implements StorageService {
                     filePath,
                     name,
                     size,
-                    ObjectType.FILE.name()
+                    ObjectType.FILE
             );
         } else {
             ensureDirectoryExist(objectName);
@@ -85,7 +85,7 @@ public class StorageServiceImpl implements StorageService {
             return new StorageDirectoryResponse(
                     filePath,
                     name + "/",
-                    ObjectType.DIRECTORY.name()
+                    ObjectType.DIRECTORY
             );
         }
     }
@@ -143,7 +143,7 @@ public class StorageServiceImpl implements StorageService {
                     newFilePath,
                     newFileName,
                     size,
-                    ObjectType.FILE.name()
+                    ObjectType.FILE
             );
         }
         ensureDirectoryExist(oldObjectName);
@@ -153,7 +153,7 @@ public class StorageServiceImpl implements StorageService {
         return new StorageDirectoryResponse(
                 StoragePathResolver.getViewFilePath(newObjectName, userId),
                 StoragePathResolver.getDirectoryName(newObjectName) + "/",
-                ObjectType.DIRECTORY.name()
+                ObjectType.DIRECTORY
         );
     }
 
@@ -181,7 +181,7 @@ public class StorageServiceImpl implements StorageService {
                             StoragePathResolver.getViewFilePath(objectPath, userId),
                             StoragePathResolver.getFileName(objectPath),
                             item.size(),
-                            ObjectType.FILE.name()
+                            ObjectType.FILE
                     );
                     responses.add(response);
                 }
@@ -199,7 +199,7 @@ public class StorageServiceImpl implements StorageService {
             StorageDirectoryResponse response = new StorageDirectoryResponse(
                     StoragePathResolver.getViewFilePath(directory, userId),
                     StoragePathResolver.getDirectoryName(directory) + "/",
-                    ObjectType.DIRECTORY.name()
+                    ObjectType.DIRECTORY
             );
             responses.add(response);
         }
@@ -228,7 +228,7 @@ public class StorageServiceImpl implements StorageService {
                             StoragePathResolver.getViewFilePath(objectName, userId),
                             StoragePathResolver.getFileName(objectName),
                             item.size(),
-                            ObjectType.FILE.name()
+                            ObjectType.FILE
                     );
                     responses.add(response);
                 } else {
@@ -245,7 +245,7 @@ public class StorageServiceImpl implements StorageService {
                     StorageDirectoryResponse response = new StorageDirectoryResponse(
                             path,
                             directoryPath + "/",
-                            ObjectType.DIRECTORY.name()
+                            ObjectType.DIRECTORY
                     );
                     responses.add(response);
                 }
@@ -271,7 +271,7 @@ public class StorageServiceImpl implements StorageService {
         return new StorageDirectoryResponse(
                 StoragePathResolver.getViewFilePath(parentDirectory, userId),
                 StoragePathResolver.getDirectoryName(directoryName) + "/",
-                ObjectType.DIRECTORY.name()
+                ObjectType.DIRECTORY
         );
     }
 

@@ -1,6 +1,7 @@
 package metty1337.cloudfilestorage.dto.response.storage;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import metty1337.cloudfilestorage.constants.ObjectType;
 
 @Schema(description = "File metadata")
 public record StorageFileResponse(
@@ -14,6 +15,6 @@ public record StorageFileResponse(
         long size,
 
         @Schema(description = "Object type", example = "FILE")
-        String type
+        ObjectType type
 ) implements StorageObjectResponse {
 }

@@ -1,6 +1,7 @@
 package metty1337.cloudfilestorage.dto.response.storage;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import metty1337.cloudfilestorage.constants.ObjectType;
 
 @Schema(description = "Directory metadata")
 public record StorageDirectoryResponse(
@@ -11,6 +12,6 @@ public record StorageDirectoryResponse(
         String name,
 
         @Schema(description = "Object type", example = "DIRECTORY")
-        String type
+        ObjectType type
 ) implements StorageObjectResponse {
 }
