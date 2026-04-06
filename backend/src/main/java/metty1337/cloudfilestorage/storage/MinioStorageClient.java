@@ -13,6 +13,8 @@ import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -109,13 +111,9 @@ public class MinioStorageClient implements StorageClient {
 
     @Override
     public void removeDirectory(String directoryName) {
-        Iterable<Result<Item>> directoryObjects = listObjectsByPrefix(directoryName, true);
-        for (Result<Item> directoryObject : directoryObjects) {
-            try {
-                removeFile(directoryObject.get().objectName());
-            } catch (Exception e) {
-                throw new StorageObjectDeletionException(e);
-            }
+        List<ObjectData> directoryObjects = listObjectsByPrefix(directoryName, true);
+        for (ObjectData directoryObject : directoryObjects) {
+            removeFile(directoryObject.name());
         }
     }
 
@@ -162,10 +160,10 @@ public class MinioStorageClient implements StorageClient {
     @Override
     public void moveDirectory(String oldObjectName, String newObjectName) {
         try {
-            Iterable<Result<Item>> oldObjects = listObjectsByPrefix(oldObjectName, true);
+            List<ObjectData> oldObjects = listObjectsByPrefix(oldObjectName, true);
 
-            for (Result<Item> oldObject : oldObjects) {
-                String oldName = oldObject.get().objectName();
+            for (ObjectData oldObject : oldObjects) {
+                String oldName = oldObject.name();
                 String newName = replaceFileNamePrefix(oldName, oldObjectName, newObjectName);
 
                 copyFile(oldName, newName);
@@ -183,14 +181,25 @@ public class MinioStorageClient implements StorageClient {
     }
 
     @Override
-    public Iterable<Result<Item>> listObjectsByPrefix(String prefix, boolean recursive) {
-        return minioClient.listObjects(
+    public List<ObjectData> listObjectsByPrefix(String prefix, boolean recursive) {
+        Iterable<Result<Item>> results = minioClient.listObjects(
                 ListObjectsArgs.builder()
                         .bucket(minioProperties.bucket().name())
                         .prefix(prefix)
                         .recursive(recursive)
                         .build()
         );
+
+        List<ObjectData> objects = new ArrayList<>();
+        for (Result<Item> result : results) {
+            try {
+                Item item = result.get();
+                objects.add(new ObjectData(item.objectName(), item.size()));
+            } catch (Exception e) {
+                throw new StorageAccessException(e);
+            }
+        }
+        return objects;
     }
 
     @Override

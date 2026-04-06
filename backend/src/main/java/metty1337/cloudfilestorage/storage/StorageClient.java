@@ -1,10 +1,9 @@
 package metty1337.cloudfilestorage.storage;
 
-import io.minio.Result;
-import io.minio.messages.Item;
 import org.jspecify.annotations.NonNull;
 
 import java.io.InputStream;
+import java.util.List;
 
 public interface StorageClient {
     @NonNull InputStream getObject(String objectName);
@@ -29,7 +28,7 @@ public interface StorageClient {
 
     long getFileSize(String objectName);
 
-    Iterable<Result<Item>> listObjectsByPrefix(String prefix, boolean recursive);
+    List<ObjectData> listObjectsByPrefix(String prefix, boolean recursive);
 
     void createDirectory(String directoryName);
 }

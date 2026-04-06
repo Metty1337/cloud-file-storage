@@ -9,9 +9,7 @@ import metty1337.cloudfilestorage.dto.response.storage.StorageDirectoryResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageObjectResponse;
 import metty1337.cloudfilestorage.exception.ObjectAlreadyExistException;
 import metty1337.cloudfilestorage.exception.ObjectNotFoundException;
-import metty1337.cloudfilestorage.exception.storage.StorageAccessException;
 import metty1337.cloudfilestorage.exception.storage.StorageDownloadingException;
-import metty1337.cloudfilestorage.exception.storage.StorageSearchingException;
 import metty1337.cloudfilestorage.mapper.StorageMapper;
 import metty1337.cloudfilestorage.service.StorageService;
 import metty1337.cloudfilestorage.storage.ObjectData;
@@ -155,27 +153,22 @@ public class StorageServiceImpl implements StorageService {
         List<StorageObjectResponse> responses = new ArrayList<>();
         Set<String> directories = new LinkedHashSet<>();
 
-        for (var object : objects) {
-            try {
-                var item = object.get();
-                String objectPath = item.objectName();
+        for (ObjectData object : objects) {
+            String objectPath = object.name();
 
-                if (StoragePathResolver.isFile(objectPath)) {
-                    collectParentDirectory(objectPath, directories);
+            if (StoragePathResolver.isFile(objectPath)) {
+                collectParentDirectory(objectPath, directories);
 
-                    if (!objectPath.contains(query)) {
-                        continue;
-                    }
-
-                    responses.add(storageMapper.toStorageFileResponse(
-                            StoragePathResolver.getViewFilePath(objectPath, userId),
-                            StoragePathResolver.getFileName(objectPath),
-                            item.size(),
-                            ObjectType.FILE
-                    ));
+                if (!objectPath.contains(query)) {
+                    continue;
                 }
-            } catch (Exception e) {
-                throw new StorageSearchingException(e);
+
+                responses.add(storageMapper.toStorageFileResponse(
+                        StoragePathResolver.getViewFilePath(objectPath, userId),
+                        StoragePathResolver.getFileName(objectPath),
+                        object.size(),
+                        ObjectType.FILE
+                ));
             }
         }
 
@@ -205,33 +198,27 @@ public class StorageServiceImpl implements StorageService {
         var objects = storageClient.listObjectsByPrefix(directoryName, false);
 
         String userDirectory = StoragePathResolver.getUserDirectory(userId);
-        for (var object : objects) {
+        for (ObjectData object : objects) {
+            String objectName = object.name();
 
-            try {
-                var item = object.get();
-                String objectName = item.objectName();
-
-                if (StoragePathResolver.isFile(objectName)) {
-                    responses.add(storageMapper.toStorageFileResponse(
-                            StoragePathResolver.getViewFilePath(objectName, userId),
-                            StoragePathResolver.getFileName(objectName),
-                            item.size(),
-                            ObjectType.FILE
-                    ));
-                } else {
-                    if (objectName.equals(directoryName)) {
-                        continue;
-                    }
-
-                    if (objectName.equals(userDirectory)) {
-                        continue;
-                    }
-
-                    String directoryPath = StoragePathResolver.getDirectoryName(objectName);
-                    responses.add(storageMapper.toStorageDirectoryResponse(path, directoryPath + "/", ObjectType.DIRECTORY));
+            if (StoragePathResolver.isFile(objectName)) {
+                responses.add(storageMapper.toStorageFileResponse(
+                        StoragePathResolver.getViewFilePath(objectName, userId),
+                        StoragePathResolver.getFileName(objectName),
+                        object.size(),
+                        ObjectType.FILE
+                ));
+            } else {
+                if (objectName.equals(directoryName)) {
+                    continue;
                 }
-            } catch (Exception e) {
-                throw new StorageAccessException(e);
+
+                if (objectName.equals(userDirectory)) {
+                    continue;
+                }
+
+                String directoryPath = StoragePathResolver.getDirectoryName(objectName);
+                responses.add(storageMapper.toStorageDirectoryResponse(path, directoryPath + "/", ObjectType.DIRECTORY));
             }
         }
         return responses;
@@ -270,8 +257,8 @@ public class StorageServiceImpl implements StorageService {
         try (ZipOutputStream zipOut = new ZipOutputStream(outputStream)) {
             var objects = storageClient.listObjectsByPrefix(folderName, true);
 
-            for (var object : objects) {
-                String objectName = object.get().objectName();
+            for (ObjectData object : objects) {
+                String objectName = object.name();
 
                 String entryName = objectName.substring(folderName.length());
                 zipOut.putNextEntry(new ZipEntry(entryName));
