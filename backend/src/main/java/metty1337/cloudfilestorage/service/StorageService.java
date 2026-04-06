@@ -1,11 +1,10 @@
 package metty1337.cloudfilestorage.service;
 
+import metty1337.cloudfilestorage.dto.response.DownloadResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageDirectoryResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageObjectResponse;
-import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.OutputStream;
 import java.util.List;
 
 public interface StorageService {
@@ -15,9 +14,7 @@ public interface StorageService {
 
     void deleteObject(String path, long userId);
 
-    Resource downloadFile(String path, long userId);
-
-    void downloadFolder(String path, long userId, OutputStream outputStream);
+    DownloadResponse downloadObject(String path, long userId);
 
     StorageObjectResponse moveObject(String from, String to, long userId);
 

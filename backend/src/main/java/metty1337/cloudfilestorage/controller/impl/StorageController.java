@@ -8,12 +8,11 @@ import metty1337.cloudfilestorage.dto.request.StorageMoveRequest;
 import metty1337.cloudfilestorage.dto.request.StoragePathRequest;
 import metty1337.cloudfilestorage.dto.request.StorageSearchRequest;
 import metty1337.cloudfilestorage.dto.request.StorageUploadRequest;
+import metty1337.cloudfilestorage.dto.response.DownloadResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageObjectResponse;
 import metty1337.cloudfilestorage.exception.EmptyFileException;
 import metty1337.cloudfilestorage.security.UserPrincipal;
 import metty1337.cloudfilestorage.service.StorageService;
-import metty1337.cloudfilestorage.storage.StoragePathResolver;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +22,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import java.io.InputStream;
 import java.util.List;
 
 @RestController
@@ -62,21 +60,10 @@ public class StorageController implements StorageControllerApi {
     @GetMapping("/download")
     @Override
     public ResponseEntity<StreamingResponseBody> downloadObject(@Valid StoragePathRequest request, @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal user) {
-        if (StoragePathResolver.isFile(request.path())) {
-            Resource resource = storageService.downloadFile(request.path(), user.getId());
-            StreamingResponseBody stream = output -> {
-                try (InputStream inputStream = resource.getInputStream()) {
-                    inputStream.transferTo(output);
-                }
-            };
-            return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .body(stream);
-        }
-
-        StreamingResponseBody stream = output -> storageService.downloadFolder(request.path(), user.getId(), output);
+        DownloadResponse result = storageService.downloadObject(request.path(), user.getId());
+        StreamingResponseBody stream = result.body()::writeTo;
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType("application/zip"))
+                .contentType(MediaType.parseMediaType(result.contentType()))
                 .body(stream);
     }
 

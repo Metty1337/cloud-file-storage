@@ -3,6 +3,7 @@ package metty1337.cloudfilestorage.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import metty1337.cloudfilestorage.constants.ObjectType;
+import metty1337.cloudfilestorage.dto.response.DownloadResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageDirectoryResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageFileResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageObjectResponse;
@@ -11,8 +12,7 @@ import metty1337.cloudfilestorage.service.StorageService;
 import metty1337.cloudfilestorage.storage.ObjectData;
 import metty1337.cloudfilestorage.storage.StorageClient;
 import metty1337.cloudfilestorage.storage.StoragePathResolver;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -101,18 +101,26 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
-    public Resource downloadFile(String path, long userId) {
-        String objectName = StoragePathResolver.getObjectName(path, userId);
-        ensureFileExists(objectName);
-        return new InputStreamResource(storageClient.getObject(objectName));
-    }
+    public DownloadResponse downloadObject(String path, long userId) {
+        if (StoragePathResolver.isFile(path)) {
+            String objectName = StoragePathResolver.getObjectName(path, userId);
+            ensureFileExists(objectName);
+            return new DownloadResponse(
+                    output -> {
+                        try (InputStream inputStream = storageClient.getObject(objectName)) {
+                            inputStream.transferTo(output);
+                        }
+                    },
+                    MediaType.APPLICATION_OCTET_STREAM_VALUE
+            );
+        }
 
-    @Override
-    public void downloadFolder(String path, long userId, OutputStream outputStream) {
         String folderName = StoragePathResolver.getObjectName(path, userId);
         ensureDirectoryExist(folderName);
-
-        downloadAsZip(outputStream, folderName);
+        return new DownloadResponse(
+                output -> downloadAsZip(output, folderName),
+                "application/zip"
+        );
     }
 
     @Override
