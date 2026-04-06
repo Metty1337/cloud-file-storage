@@ -3,7 +3,7 @@ package metty1337.cloudfilestorage.auth;
 import io.minio.MinioClient;
 import metty1337.cloudfilestorage.TestcontainersConfiguration;
 import metty1337.cloudfilestorage.config.minio.MinioBucketInitializer;
-import metty1337.cloudfilestorage.dto.request.SignUpRequest;
+import metty1337.cloudfilestorage.dto.request.auth.SignUpRequest;
 import metty1337.cloudfilestorage.dto.response.SignUpResponse;
 import metty1337.cloudfilestorage.entity.User;
 import metty1337.cloudfilestorage.exception.UserAlreadyExistException;

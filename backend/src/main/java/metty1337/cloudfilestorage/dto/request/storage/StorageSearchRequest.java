@@ -1,4 +1,4 @@
-package metty1337.cloudfilestorage.dto.request;
+package metty1337.cloudfilestorage.dto.request.storage;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;

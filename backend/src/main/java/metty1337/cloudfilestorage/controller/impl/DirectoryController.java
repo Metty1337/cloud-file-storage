@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import metty1337.cloudfilestorage.controller.DirectoryControllerApi;
-import metty1337.cloudfilestorage.dto.request.StorageDirectoryRequest;
+import metty1337.cloudfilestorage.dto.request.storage.StorageDirectoryRequest;
 import metty1337.cloudfilestorage.dto.response.storage.StorageDirectoryResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageObjectResponse;
 import metty1337.cloudfilestorage.security.UserPrincipal;

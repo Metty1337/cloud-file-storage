@@ -8,7 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import metty1337.cloudfilestorage.dto.request.StorageDirectoryRequest;
+import metty1337.cloudfilestorage.dto.request.storage.StorageDirectoryRequest;
 import metty1337.cloudfilestorage.dto.response.ErrorResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageDirectoryResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageObjectResponse;

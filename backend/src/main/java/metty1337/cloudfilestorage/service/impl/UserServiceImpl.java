@@ -1,7 +1,7 @@
 package metty1337.cloudfilestorage.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import metty1337.cloudfilestorage.dto.request.SignUpRequest;
+import metty1337.cloudfilestorage.dto.request.auth.SignUpRequest;
 import metty1337.cloudfilestorage.dto.response.SignUpResponse;
 import metty1337.cloudfilestorage.entity.User;
 import metty1337.cloudfilestorage.exception.UserAlreadyExistException;

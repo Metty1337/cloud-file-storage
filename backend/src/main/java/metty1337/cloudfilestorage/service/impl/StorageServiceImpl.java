@@ -3,7 +3,7 @@ package metty1337.cloudfilestorage.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import metty1337.cloudfilestorage.constants.ObjectType;
-import metty1337.cloudfilestorage.dto.request.FileUploadData;
+import metty1337.cloudfilestorage.dto.request.storage.FileUploadData;
 import metty1337.cloudfilestorage.dto.response.DownloadResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageDirectoryResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageObjectResponse;

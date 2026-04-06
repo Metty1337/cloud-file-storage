@@ -1,7 +1,7 @@
 package metty1337.cloudfilestorage.mapper;
 
 import metty1337.cloudfilestorage.constants.ObjectType;
-import metty1337.cloudfilestorage.dto.request.FileUploadData;
+import metty1337.cloudfilestorage.dto.request.storage.FileUploadData;
 import metty1337.cloudfilestorage.dto.response.storage.StorageDirectoryResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageFileResponse;
 import org.mapstruct.Mapper;

@@ -1,19 +1,19 @@
 package metty1337.cloudfilestorage.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import metty1337.cloudfilestorage.config.SecurityConfig;
 import metty1337.cloudfilestorage.controller.impl.AuthController;
-import metty1337.cloudfilestorage.dto.request.SignInRequest;
-import metty1337.cloudfilestorage.dto.request.SignUpRequest;
+import metty1337.cloudfilestorage.dto.request.auth.SignInRequest;
+import metty1337.cloudfilestorage.dto.request.auth.SignUpRequest;
 import metty1337.cloudfilestorage.mapper.UserMapper;
 import metty1337.cloudfilestorage.security.CustomUserDetailsService;
 import metty1337.cloudfilestorage.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import metty1337.cloudfilestorage.config.SecurityConfig;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;

@@ -1,6 +1,6 @@
 package metty1337.cloudfilestorage.service;
 
-import metty1337.cloudfilestorage.dto.request.SignUpRequest;
+import metty1337.cloudfilestorage.dto.request.auth.SignUpRequest;
 import metty1337.cloudfilestorage.dto.response.SignUpResponse;
 import metty1337.cloudfilestorage.entity.User;
 

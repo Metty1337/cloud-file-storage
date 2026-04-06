@@ -1,4 +1,4 @@
-package metty1337.cloudfilestorage.dto.request;
+package metty1337.cloudfilestorage.dto.request.storage;
 
 import java.io.InputStream;
 

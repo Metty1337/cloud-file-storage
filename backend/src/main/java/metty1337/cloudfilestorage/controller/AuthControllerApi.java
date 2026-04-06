@@ -9,13 +9,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import metty1337.cloudfilestorage.dto.request.SignInRequest;
-import metty1337.cloudfilestorage.dto.request.SignUpRequest;
+import metty1337.cloudfilestorage.dto.request.auth.SignInRequest;
+import metty1337.cloudfilestorage.dto.request.auth.SignUpRequest;
 import metty1337.cloudfilestorage.dto.response.ErrorResponse;
 import metty1337.cloudfilestorage.dto.response.SignInResponse;
 import metty1337.cloudfilestorage.dto.response.SignUpResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
