@@ -1,23 +1,10 @@
 spring:
   application:
     name: cloud-file-storage
-
----
-#dev profile
-spring:
-  config:
-    activate:
-      on-profile: dev
-    import: "optional:configtree:./backend/secrets/"
   docker:
     compose:
       enabled: false
-  datasource:
-    url: jdbc:postgresql://localhost:5432/cloud-storage-db
-    username: postgres
-    password:
   jpa:
-    show-sql: true
     hibernate:
       ddl-auto: validate
     open-in-view: false
@@ -26,66 +13,16 @@ spring:
     locations: classpath:db/migration
     validate-on-migrate: true
   session:
-    timeout: 1000000m
     redis:
       namespace: spring:session
   data:
     redis:
-      host: redis
       port: 6379
       password:
-  servlet:
-    multipart:
-      max-file-size: 50MB
-      max-request-size: 100MB
-server:
-  tomcat:
-    max-part-count: 100
-springdoc:
-  api-docs:
-    enabled: true
-  swagger-ui:
-    enabled: true
-minio:
-  url: http://localhost:9000
-  access:
-    name: minioadmin
-    secret:
-  bucket:
-    name: user-files
-
----
-#prod profile
-spring:
-  config:
-    activate:
-      on-profile: prod
-    import: "optional:configtree:/run/secrets/"
-  docker:
-    compose:
-      enabled: false
+      host: redis
   datasource:
-    url: jdbc:postgresql://postgres:5432/cloud-storage-db
     username: postgres
     password:
-  jpa:
-    show-sql: false
-    hibernate:
-      ddl-auto: validate
-    open-in-view: false
-  flyway:
-    enabled: true
-    locations: classpath:db/migration
-    validate-on-migrate: true
-  session:
-    timeout: 30m
-    redis:
-      namespace: spring:session
-  data:
-    redis:
-      host: redis
-      port: 6379
-      password:
   servlet:
     multipart:
       max-file-size: 50MB
@@ -93,15 +30,14 @@ spring:
 server:
   tomcat:
     max-part-count: 100
-springdoc:
-  api-docs:
-    enabled: true
-  swagger-ui:
-    enabled: true
 minio:
-  url: http://minio:9000
   access:
     name: minioadmin
     secret:
   bucket:
     name: user-files
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true

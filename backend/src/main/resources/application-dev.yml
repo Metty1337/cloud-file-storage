@@ -1,0 +1,11 @@
+spring:
+  config:
+    import: "optional:configtree:./backend/secrets/"
+  datasource:
+    url: jdbc:postgresql://localhost:5432/cloud-storage-db
+  jpa:
+    show-sql: true
+  session:
+    timeout: 1d
+minio:
+  url: http://localhost:9000

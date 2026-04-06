@@ -1,0 +1,11 @@
+spring:
+  config:
+    import: "optional:configtree:/run/secrets/"
+  datasource:
+    url: jdbc:postgresql://postgres:5432/cloud-storage-db
+  jpa:
+    show-sql: false
+  session:
+    timeout: 30m
+minio:
+  url: http://minio:9000
