@@ -144,7 +144,7 @@ public class MinioStorageClient implements StorageClient {
                         .maxKeys(1)
                         .build()
         );
-        return objects != null && objects.iterator().hasNext();
+        return objects.iterator().hasNext();
     }
 
     @Override
