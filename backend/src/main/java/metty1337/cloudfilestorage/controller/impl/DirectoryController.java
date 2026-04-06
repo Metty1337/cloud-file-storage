@@ -9,6 +9,7 @@ import metty1337.cloudfilestorage.dto.response.storage.StorageDirectoryResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageObjectResponse;
 import metty1337.cloudfilestorage.security.UserPrincipal;
 import metty1337.cloudfilestorage.service.StorageService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -38,6 +39,6 @@ public class DirectoryController implements DirectoryControllerApi {
     @Override
     public ResponseEntity<StorageDirectoryResponse> createDirectory(@Valid StorageDirectoryRequest request, @Parameter(hidden = true) @AuthenticationPrincipal UserPrincipal user) {
         StorageDirectoryResponse response = storageService.createDirectory(request.path(), user.getId());
-        return ResponseEntity.ok(response);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 }

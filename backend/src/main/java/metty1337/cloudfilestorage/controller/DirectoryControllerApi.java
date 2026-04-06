@@ -38,7 +38,7 @@ public interface DirectoryControllerApi {
     @PostMapping
     @Operation(summary = "Create directory", description = "Creates a new directory at the specified path")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Directory created successfully"),
+            @ApiResponse(responseCode = "201", description = "Directory created successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid path",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "401", description = "Not authenticated",
