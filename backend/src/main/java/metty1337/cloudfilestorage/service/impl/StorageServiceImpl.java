@@ -6,13 +6,13 @@ import metty1337.cloudfilestorage.constants.ObjectType;
 import metty1337.cloudfilestorage.dto.request.FileUploadData;
 import metty1337.cloudfilestorage.dto.response.DownloadResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageDirectoryResponse;
-import metty1337.cloudfilestorage.dto.response.storage.StorageFileResponse;
 import metty1337.cloudfilestorage.dto.response.storage.StorageObjectResponse;
 import metty1337.cloudfilestorage.exception.ObjectAlreadyExistException;
 import metty1337.cloudfilestorage.exception.ObjectNotFoundException;
 import metty1337.cloudfilestorage.exception.storage.StorageAccessException;
 import metty1337.cloudfilestorage.exception.storage.StorageDownloadingException;
 import metty1337.cloudfilestorage.exception.storage.StorageSearchingException;
+import metty1337.cloudfilestorage.mapper.StorageMapper;
 import metty1337.cloudfilestorage.service.StorageService;
 import metty1337.cloudfilestorage.storage.ObjectData;
 import metty1337.cloudfilestorage.storage.StorageClient;
@@ -32,6 +32,7 @@ import java.util.zip.ZipOutputStream;
 public class StorageServiceImpl implements StorageService {
 
     private final StorageClient storageClient;
+    private final StorageMapper storageMapper;
 
     @Override
     public StorageObjectResponse uploadObject(List<FileUploadData> files, String path, long userId) {
@@ -48,13 +49,13 @@ public class StorageServiceImpl implements StorageService {
 
         FileUploadData object = files.getFirst();
         if (isDirectoryFiles(files)) {
-            return new StorageDirectoryResponse(
+            return storageMapper.toStorageDirectoryResponse(
                     path,
                     StoragePathResolver.getParentDirectory(Objects.requireNonNull(object.filename())) + "/",
                     ObjectType.DIRECTORY
             );
         } else {
-            return new StorageFileResponse(
+            return storageMapper.toStorageFileResponse(
                     path,
                     object.filename(),
                     object.size(),
@@ -74,22 +75,13 @@ public class StorageServiceImpl implements StorageService {
             String name = StoragePathResolver.getFileName(objectData.name());
             long size = objectData.size();
 
-            return new StorageFileResponse(
-                    filePath,
-                    name,
-                    size,
-                    ObjectType.FILE
-            );
+            return storageMapper.toStorageFileResponse(filePath, name, size, ObjectType.FILE);
         } else {
             ensureDirectoryExist(objectName);
             String filePath = StoragePathResolver.getParentPath(path);
             String name = StoragePathResolver.getDirectoryName(path);
 
-            return new StorageDirectoryResponse(
-                    filePath,
-                    name + "/",
-                    ObjectType.DIRECTORY
-            );
+            return storageMapper.toStorageDirectoryResponse(filePath, name + "/", ObjectType.DIRECTORY);
         }
     }
 
@@ -142,18 +134,13 @@ public class StorageServiceImpl implements StorageService {
             String newFileName = StoragePathResolver.getFileName(newObjectName);
             long size = storageClient.getFileSize(newObjectName);
 
-            return new StorageFileResponse(
-                    newFilePath,
-                    newFileName,
-                    size,
-                    ObjectType.FILE
-            );
+            return storageMapper.toStorageFileResponse(newFilePath, newFileName, size, ObjectType.FILE);
         }
         ensureDirectoryExist(oldObjectName);
         String newObjectName = StoragePathResolver.getObjectName(to, userId);
         storageClient.moveDirectory(oldObjectName, newObjectName);
 
-        return new StorageDirectoryResponse(
+        return storageMapper.toStorageDirectoryResponse(
                 StoragePathResolver.getViewFilePath(newObjectName, userId),
                 StoragePathResolver.getDirectoryName(newObjectName) + "/",
                 ObjectType.DIRECTORY
@@ -180,13 +167,12 @@ public class StorageServiceImpl implements StorageService {
                         continue;
                     }
 
-                    StorageFileResponse response = new StorageFileResponse(
+                    responses.add(storageMapper.toStorageFileResponse(
                             StoragePathResolver.getViewFilePath(objectPath, userId),
                             StoragePathResolver.getFileName(objectPath),
                             item.size(),
                             ObjectType.FILE
-                    );
-                    responses.add(response);
+                    ));
                 }
             } catch (Exception e) {
                 throw new StorageSearchingException(e);
@@ -199,12 +185,11 @@ public class StorageServiceImpl implements StorageService {
                 continue;
             }
 
-            StorageDirectoryResponse response = new StorageDirectoryResponse(
+            responses.add(storageMapper.toStorageDirectoryResponse(
                     StoragePathResolver.getViewFilePath(directory, userId),
                     StoragePathResolver.getDirectoryName(directory) + "/",
                     ObjectType.DIRECTORY
-            );
-            responses.add(response);
+            ));
         }
         return responses;
     }
@@ -227,13 +212,12 @@ public class StorageServiceImpl implements StorageService {
                 String objectName = item.objectName();
 
                 if (StoragePathResolver.isFile(objectName)) {
-                    StorageFileResponse response = new StorageFileResponse(
+                    responses.add(storageMapper.toStorageFileResponse(
                             StoragePathResolver.getViewFilePath(objectName, userId),
                             StoragePathResolver.getFileName(objectName),
                             item.size(),
                             ObjectType.FILE
-                    );
-                    responses.add(response);
+                    ));
                 } else {
                     if (objectName.equals(directoryName)) {
                         continue;
@@ -244,13 +228,7 @@ public class StorageServiceImpl implements StorageService {
                     }
 
                     String directoryPath = StoragePathResolver.getDirectoryName(objectName);
-
-                    StorageDirectoryResponse response = new StorageDirectoryResponse(
-                            path,
-                            directoryPath + "/",
-                            ObjectType.DIRECTORY
-                    );
-                    responses.add(response);
+                    responses.add(storageMapper.toStorageDirectoryResponse(path, directoryPath + "/", ObjectType.DIRECTORY));
                 }
             } catch (Exception e) {
                 throw new StorageAccessException(e);
@@ -271,7 +249,7 @@ public class StorageServiceImpl implements StorageService {
 
         storageClient.createDirectory(directoryName);
 
-        return new StorageDirectoryResponse(
+        return storageMapper.toStorageDirectoryResponse(
                 StoragePathResolver.getViewFilePath(parentDirectory, userId),
                 StoragePathResolver.getDirectoryName(directoryName) + "/",
                 ObjectType.DIRECTORY
