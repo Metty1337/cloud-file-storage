@@ -38,38 +38,6 @@ services:
       retries: 5
     restart: unless-stopped
 
-  backend:
-    image: eclipse-temurin:25-jre
-    working_dir: /app
-    volumes:
-      - ./backend/build/libs:/app/libs:ro
-    entrypoint: ["java", "-jar", "/app/libs/cloud-file-storage-0.0.1-SNAPSHOT.jar", "--spring.profiles.active=dev"]
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/cloud-storage-db
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_CONFIG_IMPORT: "optional:configtree:/run/secrets/"
-      MINIO_URL: http://minio:9000
-      MINIO_ACCESS_NAME: minioadmin
-      SPRING_DATA_REDIS_HOST: redis
-      SPRING_DATA_REDIS_PORT: 6379
-    secrets:
-      - source: db_password
-        target: spring.datasource.password
-      - source: minio_password
-        target: minio.access.secret
-      - source: redis_password
-        target: spring.data.redis.password
-    ports:
-      - "127.0.0.1:8080:8080"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    restart: unless-stopped
-
   redis:
     image: redis:8-alpine
     command: sh -c "redis-server --requirepass $$(cat /run/secrets/redis_password)"
@@ -88,8 +56,6 @@ services:
     build: ./frontend
     ports:
       - "3000:80"
-    depends_on:
-      - backend
 
 secrets:
   db_password:

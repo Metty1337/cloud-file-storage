@@ -7,5 +7,8 @@ spring:
     show-sql: true
   session:
     timeout: 1d
+  data:
+    redis:
+      host: localhost
 minio:
   url: http://localhost:9000
