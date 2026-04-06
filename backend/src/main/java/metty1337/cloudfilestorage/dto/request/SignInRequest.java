@@ -8,9 +8,9 @@ import jakarta.validation.constraints.Size;
 @Schema(description = "Sign-in request")
 public record SignInRequest(
         @Schema(description = "Username", example = "johndoe", minLength = 5, maxLength = 20)
-        @NotNull @NotBlank @Size(min = 5, max = 20) String username,
+        @NotNull @NotBlank @Size(min = 5, max = 64) String username,
 
         @Schema(description = "Password", example = "secret", minLength = 5, maxLength = 20)
-        @NotNull @NotBlank @Size(min = 5, max = 20) String password
+        @NotNull @NotBlank @Size(min = 5, max = 64) String password
 ) {
 }
