@@ -11,6 +11,7 @@ import metty1337.cloudfilestorage.dto.response.SignInResponse;
 import metty1337.cloudfilestorage.dto.response.SignUpResponse;
 import metty1337.cloudfilestorage.mapper.UserMapper;
 import metty1337.cloudfilestorage.security.UserPrincipal;
+import metty1337.cloudfilestorage.service.AuthFacade;
 import metty1337.cloudfilestorage.service.UserService;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpStatus;
@@ -34,42 +35,26 @@ public class AuthController implements AuthControllerApi {
 
     private final UserService userService;
     private final UserMapper userMapper;
-    private final AuthenticationManager authenticationManager;
-    private final HttpSessionSecurityContextRepository httpSessionSecurityContextRepository;
+    private final AuthFacade authFacade;
 
     @PostMapping("/sign-up")
-    @Transactional
     @Override
-    public ResponseEntity<SignUpResponse> register(@Valid @RequestBody SignUpRequest signUpRequest, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
-        SignUpResponse response = userService.createUser(signUpRequest);
-
-        Authentication authentication = getAuthentication(signUpRequest.username(), signUpRequest.password());
-        saveAuthentication(httpServletRequest, httpServletResponse, authentication);
-
+    public ResponseEntity<SignUpResponse> register(@Valid @RequestBody SignUpRequest request,
+                                                   HttpServletRequest httpRequest,
+                                                   HttpServletResponse httpResponse) {
+        SignUpResponse response = userService.createUser(request);
+        authFacade.authenticateAndSave(request.username(), request.password(),
+                httpRequest, httpResponse);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PostMapping("/sign-in")
-    @Transactional(readOnly = true)
     @Override
-    public ResponseEntity<SignInResponse> login(@Valid @RequestBody SignInRequest signInRequest, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
-        Authentication authentication = getAuthentication(signInRequest.username(), signInRequest.password());
-        saveAuthentication(httpServletRequest, httpServletResponse, authentication);
-
-        var userDetails = (UserPrincipal) authentication.getPrincipal();
-        return new ResponseEntity<>(userMapper.toSignInResponse(userDetails), HttpStatus.OK);
-    }
-
-    private @NonNull Authentication getAuthentication(String username, String password) {
-        var authToken = new UsernamePasswordAuthenticationToken(username, password);
-        return authenticationManager.authenticate(authToken);
-    }
-
-    private void saveAuthentication(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) {
-        SecurityContext context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(authentication);
-        SecurityContextHolder.setContext(context);
-
-        httpSessionSecurityContextRepository.saveContext(context, httpServletRequest, httpServletResponse);
+    public ResponseEntity<SignInResponse> login(@Valid @RequestBody SignInRequest request,
+                                                HttpServletRequest httpRequest,
+                                                HttpServletResponse httpResponse) {
+        UserPrincipal principal = authFacade.authenticateAndSave(
+                request.username(), request.password(), httpRequest, httpResponse);
+        return ResponseEntity.ok(userMapper.toSignInResponse(principal));
     }
 }

@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 @Tag(name = "Authentication", description = "User registration and login")
 public interface AuthControllerApi {
     @PostMapping("/sign-up")
-    @Transactional
     @Operation(summary = "Register a new user", description = "Creates a new user account and automatically authenticates the session")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "User registered successfully"),
@@ -36,7 +35,6 @@ public interface AuthControllerApi {
     ResponseEntity<SignUpResponse> register(@Valid @RequestBody SignUpRequest signUpRequest, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse);
 
     @PostMapping("/sign-in")
-    @Transactional(readOnly = true)
     @Operation(summary = "Sign in", description = "Authenticates a user and creates a session")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Signed in successfully"),
