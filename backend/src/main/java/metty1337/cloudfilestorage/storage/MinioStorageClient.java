@@ -165,9 +165,11 @@ public class MinioStorageClient implements StorageClient {
             for (ObjectData oldObject : oldObjects) {
                 String oldName = oldObject.name();
                 String newName = replaceFileNamePrefix(oldName, oldObjectName, newObjectName);
-
                 copyFile(oldName, newName);
-                removeFile(oldName);
+            }
+
+            for (ObjectData oldObject : oldObjects) {
+                removeFile(oldObject.name());
             }
         } catch (Exception e) {
             throw new StorageMovementException(e);
