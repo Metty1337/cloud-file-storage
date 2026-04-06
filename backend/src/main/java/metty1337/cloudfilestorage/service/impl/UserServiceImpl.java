@@ -26,8 +26,8 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public SignUpResponse createUser(SignUpRequest signUpRequest) {
-        User userWithHashedPassword = userMapper.toEntity(signUpRequest)
-                .withPassword(passwordEncoder.encode(signUpRequest.password()));
+        User userWithHashedPassword = new User(signUpRequest.username(), passwordEncoder.encode(signUpRequest.password()));
+
         try {
             userRepository.save(userWithHashedPassword);
         } catch (DataIntegrityViolationException e) {
